@@ -1,0 +1,10 @@
+---
+  - name: Test Playbook
+    hosts: localhost
+    connection: local
+    tasks:
+
+      - name: Start a Docker service
+        community.docker.docker_container:
+          name: hello-world
+          image: hello-world
