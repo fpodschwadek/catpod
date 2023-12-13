@@ -1,6 +1,6 @@
 # Ansible Docker
 
-Work in progress.
+Still a bit work in progress. Does what I want it to do but needs some more testing and docs and examples.
 
 This is basically going to be a CI service container for provisioning and handling containers on the host.
 
