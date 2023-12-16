@@ -14,6 +14,8 @@ RUN apk update; \
     pip3 install docker; \
     pip3 install requests;
 
+COPY ansible.cfg /etc/ansible/ansible.cfg
+
 WORKDIR /srv
 
 ENTRYPOINT ["/usr/local/bin/ansible-playbook"]
