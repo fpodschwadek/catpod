@@ -1,4 +1,4 @@
-# PROGRESS_NO_TRUNC=1 docker build -t fpod/ansible-docker --progress plain --no-cache .
+# PROGRESS_NO_TRUNC=1 docker build -t fpod/catpod --progress plain --no-cache .
 FROM python:3-alpine
 
 RUN apk update; \
