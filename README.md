@@ -18,7 +18,7 @@ Similarly, I also like the idea of executing Ansible on a production machine wit
 
 These days, lots of stuff is done with Docker (or Podman, or whatever your favourite is) containers. While there are [plenty of modules for handling Docker with Ansible](https://docs.ansible.com/ansible/latest/collections/community/docker/index.html), using these _inside_ of the CATPOD container would not help much -- after all, CATPOD is used to handle Docker applications on the same host it is running on itself.
 
-To do this, we need to mount the Docker socket if the host system into the CATPOD container. We can then use it to create and provision containers for other applications on the host system (see https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/#the-socket-solution for this wonderfully simple strategy).
+To do this, we need to mount the Docker socket of the host system into the CATPOD container. We can then use it to create and provision containers for other applications on the host system (see https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/#the-socket-solution for this wonderfully simple strategy).
 
 ## Examples
 
@@ -30,7 +30,7 @@ Here, CATPOD uses the [test playbook](https://github.com/fpodschwadek/catpod/blo
 
 ```bash
 docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./tes
-t.yml:/tmp/test.yml --rm ansible-docker test.yml
+t.yml:/tmp/test.yml --rm fpod/catpod test.yml
 ```
 
 ## Roadmap
