@@ -1,10 +1,10 @@
 # CATPOD (Containerised Ansible Tool for Provisioning, Orchestration and Deployment)
 
-<img style="float:left;max-width:180px" src="https://github.com/fpodschwadek/catpod/blob/main/CATPOD_logo.png" alt="CATPOD logo">
+<p align="center">
+    <img src="https://github.com/fpodschwadek/catpod/blob/main/CATPOD_logo.png" alt="CATPOD logo" width="180">
+</p>
 
 CATPOD is [Ansible](https://docs.ansible.com/) in a container for automated provisioning, orchestration and deployment tasks. (You can think of it as a minimalist [Jenkins](https://www.jenkins.io/doc/)-like tool without the Java.)
-
-<div style="clear:both"></div>
 
 ## The Basic Idea
 
