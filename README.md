@@ -30,7 +30,7 @@ Here, CATPOD uses the [test playbook](https://github.com/fpodschwadek/catpod/blo
 
 ```bash
 docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./tes
-t.yml:/tmp/test.yml --rm ansible-docker test.yml
+t.yml:/tmp/test.yml --rm fpod/catpod test.yml
 ```
 
 ## Roadmap
