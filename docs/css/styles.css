@@ -1,0 +1,22 @@
+body {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+main {
+  display: block;
+  margin: 0 auto;
+  max-width: 960px;
+  width: 90%;
+}
+
+h1 {
+  font-family: Arial Narrow, Arial, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 300;
+}
+
+.logo {
+  float: left;
+  margin: 1rem;
+  max-width: 180px;
+}
