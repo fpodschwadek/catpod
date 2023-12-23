@@ -12,7 +12,8 @@ RUN apk update; \
     pip3 install --upgrade virtualenv; \
     pip3 install ansible; \
     pip3 install docker; \
-    pip3 install requests;
+    pip3 install requests; \
+    pip3 install python-memcached;
 
 COPY ansible.cfg /etc/ansible/ansible.cfg
 
