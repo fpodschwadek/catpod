@@ -9,5 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          imagestuff:
+            - '.dockerignore'
+            - 'ansible.cfg'
+            - 'Dockerfile'
     - name: Build the Docker image
+      if: steps.filter.outputs.imagestuff == 'true'
       run: docker build . --file Dockerfile --tag ansible-docker:$(date +%s)
