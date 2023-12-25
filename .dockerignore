@@ -1,6 +1,10 @@
 .github
+docs
+node_modules
 CATPOD_logo.png
 CATPOD_teaser.jpg
 LICENSE
+package-lock.json
+package.json
 README.md
 test.yml

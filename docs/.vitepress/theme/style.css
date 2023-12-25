@@ -1,0 +1,89 @@
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('fonts/space_grotesk_variable_font.woff2') format('woff2');
+}
+
+body {
+  background-color: #fbe1cc;
+  font-family: Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  margin: 0;
+}
+
+body * {
+  box-sizing: border-box;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+}
+
+nav a {
+  background-color: #021128;
+  border-radius: 4px;
+  color: #fff;
+  display: block;
+  margin: 0 auto .4rem;
+  padding: .5rem 1rem;
+  text-decoration: none;
+  width: 90%;
+}
+
+nav a.resource {
+  background-color: #f06c00;
+}
+
+main {
+  align-items: flex-start;
+  column-gap: 4rem;
+  display: flex;
+  margin: 0 auto;
+  max-width: 960px;
+  width: 90%;
+}
+
+footer {
+  bottom: 0;
+  height: 100px;
+  position: fixed;
+  width: 100%;
+  z-index: -1;
+}
+
+h1,
+h2 {
+  font-family: 'Space Grotesk', Arial Narrow, Arial, sans-serif;
+  font-weight: 300;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+p {
+  hyphens: auto;
+  line-height: 1.35;
+  text-align: justify;
+}
+
+.sidebar {
+  flex: 0 0 180px;
+  width: 180px;
+}
+
+.content {
+  flex: 1;
+}
+
+.logo {
+  display: block;
+  margin: 2rem auto 4rem;
+  max-width: 180px;
+  width: 90%;
+}
