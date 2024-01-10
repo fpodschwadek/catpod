@@ -16,6 +16,8 @@ RUN apk update; \
     pip3 install python-memcached;
 
 COPY ansible.cfg /etc/ansible/ansible.cfg
+COPY catpod.yml /etc/ansible/catpod.yml
+COPY docker.yml /etc/ansible/docker.yml
 
 WORKDIR /srv
 

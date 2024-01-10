@@ -1,0 +1,5 @@
+# Main Docker application container list.
+---
+plugin: community.docker.docker_containers
+groups:
+  kittens: "docker_config.Labels['catpod.inventory.group'] == 'kittens'"
