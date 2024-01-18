@@ -1,5 +1,5 @@
 # PROGRESS_NO_TRUNC=1 docker build -t fpod/catpod --progress plain --no-cache .
-FROM python:3-alpine
+FROM python:3.11-alpine
 
 COPY ansible.cfg catpod.yml docker.yml /etc/ansible/
 COPY entrypoint.sh /srv/
