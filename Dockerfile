@@ -23,6 +23,7 @@ RUN apk update; \
     ansible-galaxy collection install \
         community.docker \
         --upgrade \
+    ; \
     chmod +x /srv/entrypoint.sh
 
 WORKDIR /srv
