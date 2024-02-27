@@ -17,7 +17,7 @@ RUN apk update; \
     pip3 install docker; \
     pip3 install requests; \
     pip3 install python-memcached; \
-    # Make sure that we have the latest version of relevan
+    # Make sure that we have the latest version of relevant
     # collections. This is not always the case for collections
     # that are automatically co-installed.
     ansible-galaxy collection install \
