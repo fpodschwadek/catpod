@@ -1,5 +1,8 @@
 # PROGRESS_NO_TRUNC=1 docker build -t fpod/catpod --progress plain --no-cache .
-FROM python:3-alpine
+FROM python:3.11-alpine
+
+COPY ansible.cfg catpod.yml docker.yml /etc/ansible/
+COPY entrypoint.sh /srv/
 
 RUN apk update; \
     apk upgrade; \
@@ -13,10 +16,16 @@ RUN apk update; \
     pip3 install ansible; \
     pip3 install docker; \
     pip3 install requests; \
-    pip3 install python-memcached;
-
-COPY ansible.cfg /etc/ansible/ansible.cfg
+    pip3 install python-memcached; \
+    # Make sure that we have the latest version of relevan
+    # collections. This is not always the case for collections
+    # that are automatically co-installed.
+    ansible-galaxy collection install \
+        community.docker \
+        --upgrade \
+    ; \
+    chmod +x /srv/entrypoint.sh
 
 WORKDIR /srv
 
-ENTRYPOINT ["/usr/local/bin/ansible-playbook"]
+ENTRYPOINT ["/srv/entrypoint.sh"]

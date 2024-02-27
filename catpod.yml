@@ -1,0 +1,7 @@
+# CATPOD application container list.
+---
+catpod:
+  hosts:
+    control:
+      ansible_host: localhost
+      ansible_connection: local
