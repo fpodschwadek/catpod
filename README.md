@@ -33,6 +33,16 @@ docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./tes
 t.yml:/tmp/test.yml --rm fpod/catpod test.yml
 ```
 
+## Vault
+
+You can use CATPOD to encrypt data with Ansible Vault by using the `vault` followed by anything you would use with locally installed `ansbile-vault`. For example, you can use the following command to encrypt a string:
+
+```bash
+docker run -it fpod/catpod vault encrypt_string '<variable value>' --name '<variable key>'
+```
+
+(For more details see https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html#creating-encrypted-variables.)
+
 ## Roadmap
 
 What is going to happen next?
