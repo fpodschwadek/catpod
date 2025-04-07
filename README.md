@@ -29,8 +29,10 @@ For now, there's only one measly example but more (for more complex cases) will 
 Here, CATPOD uses the [test playbook](https://github.com/fpodschwadek/catpod/blob/main/test.yml) to create a container from the Docker `hello-world` image remove itself when done.
 
 ```bash
-docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./test.yml:/tmp/test.yml --rm fpod/catpod test.yml
+docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./test.yml:/tmp/test.yml --rm fpod/catpod /tmp/test.yml
 ```
+
+Note that the file path used at the end of this command refers to the path inside the CATPOD container the file was mounted to, in this case `/tmp/text/yml`.
 
 ## Vault
 
