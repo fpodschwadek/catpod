@@ -26,7 +26,7 @@ For now, there's only one measly example but more (for more complex cases) will 
 
 ### Creating a Single Container
 
-Here, CATPOD uses the [test playbook](https://github.com/fpodschwadek/catpod/blob/main/test.yml) to create a container from the Docker `hello-world` image remove itself when done.
+Here, CATPOD uses the [test playbook](https://github.com/fpodschwadek/catpod/blob/main/test.yml) to create a container from the Docker `hello-world` image and removes itself when done.
 
 ```bash
 docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./test.yml:/tmp/test.yml --rm fpod/catpod /tmp/test.yml
