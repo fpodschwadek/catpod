@@ -1,2 +1,6 @@
 onlyBuiltDependencies:
+  - core-js
   - esbuild
+  - highlight.js
+  - vue-demi
+  - vuepress
