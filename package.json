@@ -1,12 +1,12 @@
 {
   "devDependencies": {
-    "vitepress": "^1.0.0-rc.32",
-    "vue": "^3.3.13"
+    "@vuepress/bundler-vite": "^2.0.0-rc.20",
+    "@vuepress/theme-default": "^2.0.0-rc.91",
+    "sass-embedded": "^1.86.3",
+    "vuepress": "^2.0.0-rc.20"
   },
   "scripts": {
-    "docs:dev": "vitepress dev --host --port 80 docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
-  },
-  "comment": "to run dev server in utility container, use 'docker run -it -w /home/node/app -v ./:/home/node/app --rm --name vitepress node:lts-alpine npm docs:dev'"
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  }
 }
