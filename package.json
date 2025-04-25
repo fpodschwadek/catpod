@@ -8,5 +8,6 @@
   "scripts": {
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs"
-  }
+  },
+  "comment": "to run dev server in utility container, use 'docker run -e NODE_OPTIONS=--openssl-legacy-provider -dit -p 80:8080 -v ./:/home/node -w /home/node --name catpod-docs --rm node:21-alpine npm docs:dev'"
 }

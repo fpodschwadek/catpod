@@ -1,0 +1,104 @@
+$dark-blue: #001328;
+$cat-orange: #EF6E00;
+$cat-orange-light: #ED8024;
+$cat-orange-strong: #E96D00;
+
+@font-face {
+  font-family: 'InclusiveSans-Bold';
+  font-style: bold;
+  src: url('../fonts/InclusiveSans-Bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'InclusiveSans-Italic';
+  font-style: italic;
+  src: url('../fonts/InclusiveSans-Italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'InclusiveSans-Regular';
+  font-style: normal;
+  src: url('../fonts/InclusiveSans-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('../fonts/space_grotesk_variable_font.woff2') format('woff2');
+}
+
+:root {
+  // brand colors
+  --vp-c-accent: #{$cat-orange};
+  --vp-c-accent-bg: #{$cat-orange-light};
+  --vp-c-accent-hover: #{$cat-orange-strong};
+
+  // text colors
+  --vp-c-text: rgb(40 40 44);
+  --vp-c-text-mute: rgb(40 40 44 / 78%);
+  --vp-c-text-subtle: rgb(40 40 44 / 56%);
+
+  body {
+    font-family: "InclusiveSans-Regular", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+    font-size: 18px;
+    margin: 0;
+  }
+
+  body * {
+    box-sizing: border-box;
+  }
+
+  cite,
+  em,
+  i {
+    font-family: "InclusiveSans-Italic", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  }
+
+  strong {
+    font-family: "InclusiveSans-Bold", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  }
+
+  h1,
+  h2 {
+    font-family: 'Space Grotesk', Arial Narrow, Arial, sans-serif;
+    font-weight: 300;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  p {
+    hyphens: auto;
+    line-height: 1.35;
+    text-align: justify;
+  }
+
+  /* Overrides */
+  .vp-sidebar {
+    background-image: url('https://github.com/fpodschwadek/catpod/raw/main/CATPOD_logo.png');
+    background-position: center 20px;
+    background-repeat: no-repeat;
+    background-size: 120px;
+
+    @media (max-width: 719px) {
+      background-position: center 70px;
+      padding-top: 190px;
+    }
+
+    @media (min-width: 720px) {
+      background-position: center 20px;
+      padding-top: 140px;
+    }
+  }
+}
+
+[data-theme='dark'] {
+    // text colors
+    --vp-c-text: rgb(235 235 245 / 86%);
+    --vp-c-text-mute: rgb(235 235 245 / 60%);
+    --vp-c-text-subtle: rgb(235 235 245 / 38%);
+}
