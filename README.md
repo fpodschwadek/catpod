@@ -6,9 +6,11 @@
 
 CATPOD is [Ansible](https://docs.ansible.com/) in a container for automated provisioning, orchestration and deployment tasks. (You can think of it as a minimalist [Jenkins](https://www.jenkins.io/doc/)-like tool without the Java.)
 
+You can find this project on GitHub: [https://github.com/fpodschwadek/catpod/](https://github.com/fpodschwadek/catpod/)
+
 ## The Basic Idea
 
-The basic idea behind CATPOD is to have a container that can be run on demand to execute Ansible playbooks without having ansible to be installed on a particular machine.
+The basic idea behind CATPOD is to have a container that can be run on demand to execute Ansible playbooks without having Ansible to be installed on a particular machine.
 
 What led to this development is my work on Docker applications that grew in complexity but needed to remain simple to set up and maintain for team members who didn't (and needn't) know the whole application in all its details. Working in a Digital Humanities context, most of them had only limited Docker and Ansible experience, if at all. Requirements to learn more about these technologies as well as requirements to install additional software beyond Docker on their machines needed to be kept to a minimum.
 
