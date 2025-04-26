@@ -8,17 +8,17 @@ CATPOD is [Ansible](https://docs.ansible.com/) in a container for automated prov
 
 ## The Basic Idea
 
-The basic idea beind CATPOD is to have a container that can be run on demand to execute Ansible playbooks without having ansible to be installed on a particular machine.
+The basic idea behind CATPOD is to have a container that can be run on demand to execute Ansible playbooks without having ansible to be installed on a particular machine.
 
 What led to this development is my work on Docker applications that grew in complexity but needed to remain simple to set up and maintain for team members who didn't (and needn't) know the whole application in all its details. Working in a Digital Humanities context, most of them had only limited Docker and Ansible experience, if at all. Requirements to learn more about these technologies as well as requirements to install additional software beyond Docker on their machines needed to be kept to a minimum.
 
-Similarly, I also like the idea of executing Ansible on a production machine without to deploy a complex Docker application without first having to install Ansible itself.
+Similarly, I also like the idea of executing Ansible on a production machine to deploy a complex Docker application without first having to install Ansible itself.
 
 ## Deploying Containers From Within a Container
 
 These days, lots of stuff is done with Docker (or Podman, or whatever your favourite is) containers. While there are [plenty of modules for handling Docker with Ansible](https://docs.ansible.com/ansible/latest/collections/community/docker/index.html), using these _inside_ of the CATPOD container would not help much -- after all, CATPOD is used to handle Docker applications on the same host it is running on itself.
 
-To do this, we need to mount the Docker socket of the host system into the CATPOD container. We can then use it to create and provision containers for other applications on the host system (see https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/#the-socket-solution for this wonderfully simple strategy).
+To do this, we need to mount the Docker socket of the host system into the CATPOD container. We can then use it to create and provision containers for other applications on the host system (see [Jérôme Petazzoni's Post](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/#the-socket-solution) for this wonderfully simple strategy).
 
 ## Examples
 
@@ -32,11 +32,11 @@ Here, CATPOD uses the [test playbook](https://github.com/fpodschwadek/catpod/blo
 docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./test.yml:/tmp/test.yml --rm fpod/catpod /tmp/test.yml
 ```
 
-Note that the file path used at the end of this command refers to the path inside the CATPOD container the file was mounted to, in this case `/tmp/text/yml`.
+Note that the file path used at the end of this command refers to the path inside the CATPOD container the file was mounted to, in this case `/tmp/test/yml`.
 
 ## Vault
 
-You can use CATPOD to encrypt data with Ansible Vault by using the `vault` followed by anything you would use with locally installed `ansbile-vault`. For example, you can use the following command to encrypt a string:
+You can use CATPOD to encrypt data with Ansible Vault by using the `vault` followed by anything you would use with locally installed `ansible-vault`. For example, you can use the following command to encrypt a string:
 
 ```bash
 docker run -it fpod/catpod vault encrypt_string '<variable value>' --name '<variable key>'
