@@ -25,8 +25,15 @@ RUN apk update; \
         community.docker \
         --upgrade \
     ; \
-    chmod +x /srv/entrypoint.sh
+    chmod +x /srv/entrypoint.sh; \
+    # Add catpod user and group with specific UID/GID
+    addgroup -g 999 catpod; \
+    adduser -D -u 999 -G catpod catpod; \
+    # Give appropriate permissions
+    chown -R catpod:catpod /srv
 
 WORKDIR /srv
+# Switch to non-root user
+USER catpod
 
 ENTRYPOINT ["/srv/entrypoint.sh"]
