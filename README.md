@@ -8,6 +8,8 @@ CATPOD is [Ansible](https://docs.ansible.com/) in a container for automated prov
 
 You can find this project on GitHub: [https://github.com/fpodschwadek/catpod/](https://github.com/fpodschwadek/catpod/)
 
+CATPOD Docs: https://fpodschwadek.github.io/catpod/
+
 ## The Basic Idea
 
 The basic idea behind CATPOD is to have a container that can be run on demand to execute Ansible playbooks without having Ansible to be installed on a particular machine.
