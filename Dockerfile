@@ -27,8 +27,8 @@ RUN apk update; \
     ; \
     chmod +x /srv/entrypoint.sh; \
     # Add catpod user and group with specific UID/GID
-    addgroup -g 999 catpod; \
-    adduser -D -u 999 -G catpod catpod; \
+    addgroup -g 10999 catpod; \
+    adduser -D -u 10999 -G catpod catpod; \
     # Give appropriate permissions
     chown -R catpod:catpod /srv
 
