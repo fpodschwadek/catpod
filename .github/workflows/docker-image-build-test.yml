@@ -22,4 +22,38 @@ jobs:
 
     - name: Build the Docker image
       if: steps.filter.outputs.imagestuff == 'true'
-      run: docker build . --file Dockerfile --tag ansible-docker:$(date +%s)
+      id: build
+      run: |
+        IMAGE_TAG=ansible-docker:$(date +%s)
+        echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+        docker build . --file Dockerfile --tag $IMAGE_TAG
+
+    - name: Run container and verify files
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        # Run the container with overridden entrypoint
+        CONTAINER_ID=$(docker run -d --entrypoint /bin/ash ${{ steps.build.outputs.image_tag }} -c "sleep 30")
+
+        # Check if files exist
+        FILES_TO_CHECK=("/usr/local/bin/ansible-galaxy" "/usr/local/bin/ansible-vault" "/usr/local/bin/ansible-playbook")
+        MISSING_FILES=()
+
+        for FILE in "${FILES_TO_CHECK[@]}"; do
+          echo "Checking for $FILE..."
+          if ! docker exec $CONTAINER_ID [ -f "$FILE" ]; then
+            MISSING_FILES+=("$FILE")
+            echo "❌ File $FILE not found"
+          else
+            echo "✅ File $FILE exists"
+          fi
+        done
+
+        # Clean up container
+        docker stop $CONTAINER_ID
+        docker rm $CONTAINER_ID
+
+        # Fail the workflow if any files are missing
+        if [ ${#MISSING_FILES[@]} -ne 0 ]; then
+          echo "The following required files are missing: ${MISSING_FILES[*]}"
+          exit 1
+        fi
