@@ -2,7 +2,7 @@ import { viteBundler } from '@vuepress/bundler-vite'
 import { defaultTheme } from '@vuepress/theme-default'
 import { defineUserConfig } from 'vuepress'
 
-// https://vitepress.dev/reference/site-config
+// https://vuepress.vuejs.org/reference/config.html
 export default defineUserConfig({
   base: '/catpod/',
   bundler: viteBundler(),
@@ -13,6 +13,8 @@ export default defineUserConfig({
   theme: defaultTheme({
     sidebar: [
       '/',
+      '/how-to-use.md',
+      '/use-cases.md',
       '/resources.md'
     ]
   }),
