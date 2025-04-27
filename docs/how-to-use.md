@@ -28,7 +28,10 @@ With this example playbook, we can run a CATPOD container to start a [Docker *He
 ```sh
 docker run -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ./test.yml:/tmp/test.yml --group-add $(stat -c '%g' /var/run/docker.sock) --rm fpod/catpod /tmp/test.yml
+  -v ./test.yml:/tmp/test.yml \
+  --group-add $(stat -c '%g' /var/run/docker.sock) \
+  --rm fpod/catpod \
+    /tmp/test.yml
 ```
 
 We need to mount two volumes into the CATPOD container:
@@ -66,7 +69,10 @@ This is used just like in the example above:
 ```sh
 docker run -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ./test.yml:/tmp/test.yml --group-add $(stat -c '%g' /var/run/docker.sock) --rm fpod/catpod /tmp/test.yml
+  -v ./test.yml:/tmp/test.yml \
+  --group-add $(stat -c '%g' /var/run/docker.sock) \
+  --rm fpod/catpod \
+    /tmp/test.yml
 ```
 
 Beyond this, CATPOD provides (as of now) access to `ansible-galaxy` and `ansible-vault`.
@@ -80,7 +86,8 @@ You can run this container command like `ansible-galaxy` itself, e.g., for downl
 ```sh
 docker run -it \
   -v ./local_collections:/tmp/local_collections \
-   --group-add $(stat -c '%g' /var/run/docker.sock) --rm fpod/catpod \
+   --group-add $(stat -c '%g' /var/run/docker.sock) \
+   --rm fpod/catpod \
     galaxy collection download my_namespace.my_collection \
     -p /tmp/local_collections
 ```
@@ -96,8 +103,10 @@ The `vault` command allows to encrypt variables and files that can be used in An
 You can run this container command like `ansible-vault` itself, e.g, for encrypting a string containing an access token:
 
 ```sh
-docker run -it --group-add $(stat -c '%g' /var/run/docker.sock) fpod/catpod vault \
-  encrypt_string 'secret-access-token' --name 'encrypted_token'
+docker run -it \
+  --group-add $(stat -c '%g' /var/run/docker.sock) \
+  --rm fpod/catpod vault \
+    encrypt_string 'secret-access-token' --name 'encrypted_token'
 ```
 
 You are then prompted to enter a vault password (this password will later need to be known to your playbook in order to decrypt the token value).
