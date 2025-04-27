@@ -46,7 +46,7 @@ This is your example playbook that needs to be mounted into the container for th
 
 **Enabling Docker socket access:** ` --group-add $(stat -c '%g' /var/run/docker.sock)`
 
-The default user inside the CATPOD container is not `root` but a `catpod` with the UID and GID `10900`. This user does not automatically have permissions to access the mounted Docker socket. The the `group-add` option, you add the `catpod` user to the group with the required permissions to do so.
+The default user inside the CATPOD container is not `root` but a user named `catpod` with the UID and GID `10900`. This user does not automatically have permissions to access the mounted Docker socket. The the `group-add` option, you add the `catpod` user to the group with the required permissions to do so.
 
 It is recommended to use the `--rm` option to remove the CATPOD container after it has run the playbook, otherwise you'll end up with an idle container hanging around.
 
