@@ -33,7 +33,7 @@ For now, there's only one measly example but more (for more complex cases) will 
 Here, CATPOD uses the [test playbook](https://github.com/fpodschwadek/catpod/blob/main/test.yml) to create a container from the Docker `hello-world` image and removes itself when done.
 
 ```bash
-docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./test.yml:/tmp/test.yml --rm fpod/catpod /tmp/test.yml
+docker run -it -v /var/run/docker.sock:/var/run/docker.sock -v ./test.yml:/tmp/test.yml --group-add $(stat -c '%g' /var/run/docker.sock) --rm fpod/catpod /tmp/test.yml
 ```
 
 Note that the file path used at the end of this command refers to the path inside the CATPOD container the file was mounted to, in this case `/tmp/test/yml`.
@@ -43,7 +43,7 @@ Note that the file path used at the end of this command refers to the path insid
 You can use CATPOD to encrypt data with Ansible Vault by using the `vault` followed by anything you would use with locally installed `ansible-vault`. For example, you can use the following command to encrypt a string:
 
 ```bash
-docker run -it fpod/catpod vault encrypt_string '<variable value>' --name '<variable key>'
+docker run -it --group-add $(stat -c '%g' /var/run/docker.sock) fpod/catpod vault encrypt_string '<variable value>' --name '<variable key>'
 ```
 
 (For more details see https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html#creating-encrypted-variables.)
