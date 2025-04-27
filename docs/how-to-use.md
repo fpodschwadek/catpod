@@ -28,7 +28,7 @@ With this example playbook, we can run a CATPOD container to start a [Docker *He
 ```sh
 docker run -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ./test.yml:/tmp/test.yml --rm fpod/catpod /tmp/test.yml
+  -v ./test.yml:/tmp/test.yml --group-add $(stat -c '%g' /var/run/docker.sock) --rm fpod/catpod /tmp/test.yml
 ```
 
 We need to mount two volumes into the CATPOD container:
@@ -41,9 +41,13 @@ We need to mount two volumes into the CATPOD container:
 
 This is your example playbook that needs to be mounted into the container for the Ansible instance inside the container to use. Note that it does not matter where exactly in the container the file is mounted, as you specify the full file path in the container command anyway. However, `tmp` is a safe location without any risks of name collisions or overwriting existing files.
 
+**Enabling Docker socket access:** ` --group-add $(stat -c '%g' /var/run/docker.sock)`
+
+The default user inside the CATPOD container is not `root` but a `catpod` with the UID and GID `10900`. This user does not automatically have permissions to access the mounted Docker socket. The the `group-add` option, you add the `catpod` user to the group with the required permissions to do so.
+
 It is recommended to use the `--rm` option to remove the CATPOD container after it has run the playbook, otherwise you'll end up with an idle container hanging around.
 
-**Container Command:** `/tmp/test.yml`
+**Container command:** `/tmp/test.yml`
 
 To run a playbook, the container command is the path to the mounted playbook file inside the container, in this case `/tmp/test.yml`. If you use a different mount path, e.g., `-v ./test.yml:/var/test.yml`, your container command would refer to that path, `/var/test.yml`. 
 
@@ -62,7 +66,7 @@ This is used just like in the example above:
 ```sh
 docker run -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ./test.yml:/tmp/test.yml --rm fpod/catpod /tmp/test.yml
+  -v ./test.yml:/tmp/test.yml --group-add $(stat -c '%g' /var/run/docker.sock) --rm fpod/catpod /tmp/test.yml
 ```
 
 Beyond this, CATPOD provides (as of now) access to `ansible-galaxy` and `ansible-vault`.
@@ -76,7 +80,7 @@ You can run this container command like `ansible-galaxy` itself, e.g., for downl
 ```sh
 docker run -it \
   -v ./local_collections:/tmp/local_collections \
-  --rm fpod/catpod \
+   --group-add $(stat -c '%g' /var/run/docker.sock) --rm fpod/catpod \
     galaxy collection download my_namespace.my_collection \
     -p /tmp/local_collections
 ```
@@ -92,7 +96,7 @@ The `vault` command allows to encrypt variables and files that can be used in An
 You can run this container command like `ansible-vault` itself, e.g, for encrypting a string containing an access token:
 
 ```sh
-docker run -it fpod/catpod vault \
+docker run -it --group-add $(stat -c '%g' /var/run/docker.sock) fpod/catpod vault \
   encrypt_string 'secret-access-token' --name 'encrypted_token'
 ```
 
