@@ -5,7 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.5.3] - 2025-04-26
+## [1.6.4] - 2025-04-28
+
+> The more they overthink the plumbing, the easier it is to stop up the drain.
+
+### Fixed
+
+- Assigned ownership of folder `/ect/ansible` and files therein to user `catpod`, otherwise things don't work.
+- Switched to `wget` for installation of Docker Compose in Dockerfile, otherwise things fail silently and nothing gets installed because there's no `curl`.
+
+## [1.6.2] - 2025-04-26
 
 > What in the name of Sir Isaac H. Newton happened here?
 
@@ -13,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Installed Docker Compose from official source to avoid Golang vulnerabilities in Alpine ports.
 
-## [1.5.2] - 2025-04-26
+## [1.6.0] - 2025-04-26
 
 > It's like in chess: First, you strategically position your pieces and when the timing is right you strike.
 
