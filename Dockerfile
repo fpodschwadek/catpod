@@ -7,20 +7,20 @@ COPY entrypoint.sh /srv/
 ARG PIP_ROOT_USER_ACTION=ignore
 ARG PIP_BREAK_SYSTEM_PACKAGES=true
 
-RUN apk update && \
-    apk upgrade --available && \
+RUN apk update; \
+    apk upgrade --available; \
     apk add --no-cache --update \
         docker-cli \
         git \
         openssh-client \
     ; \
     # Install Docker Compose from official source
-    DOCKER_COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$') && \
-    curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose && \
-    chmod +x /usr/local/bin/docker-compose && \
+    DOCKER_COMPOSE_VERSION=$(wget -qO- https://api.github.com/repos/docker/compose/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$'); \
+    wget -O /usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"; \
+    chmod +x /usr/local/bin/docker-compose; \
     # Create a symlink to the CLI plugins directory
-    mkdir -p /usr/libexec/docker/cli-plugins && \
-    ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins/docker-compose && \
+    mkdir -p /usr/libexec/docker/cli-plugins; \
+    ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins/docker-compose; \
     # Continue with other installations
     pip install --upgrade pip; \
     pip3 install ansible; \
@@ -36,7 +36,7 @@ RUN apk update && \
     ; \
     chmod +x /srv/entrypoint.sh; \
     # Add catpod user and group with specific UID/GID
-    addgroup -g 10999 catpod && \
+    addgroup -g 10999 catpod; \
     adduser -D -u 10999 -G catpod catpod; \
     # Give appropriate permissions
     chown -R catpod:catpod /srv; \
