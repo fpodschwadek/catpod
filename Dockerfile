@@ -39,7 +39,8 @@ RUN apk update && \
     addgroup -g 10999 catpod && \
     adduser -D -u 10999 -G catpod catpod; \
     # Give appropriate permissions
-    chown -R catpod:catpod /srv
+    chown -R catpod:catpod /srv; \
+    chown -R catpod:catpod /etc/ansible;
 
 WORKDIR /srv
 # Switch to non-root user
