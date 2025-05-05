@@ -10,17 +10,10 @@ ARG PIP_BREAK_SYSTEM_PACKAGES=true
 RUN apk update; \
     apk upgrade --available; \
     apk add --no-cache --update \
-        docker-cli \
+        docker-cli-compose \
         git \
         openssh-client \
     ; \
-    # Install Docker Compose from official source
-    DOCKER_COMPOSE_VERSION=$(wget -qO- https://api.github.com/repos/docker/compose/releases/latest | grep -o '"tag_name": "[^"]*' | grep -o '[^"]*$'); \
-    wget -O /usr/local/bin/docker-compose "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64"; \
-    chmod +x /usr/local/bin/docker-compose; \
-    # Create a symlink to the CLI plugins directory
-    mkdir -p /usr/libexec/docker/cli-plugins; \
-    ln -s /usr/local/bin/docker-compose /usr/libexec/docker/cli-plugins/docker-compose; \
     # Continue with other installations
     pip install --upgrade pip; \
     pip3 install ansible; \
