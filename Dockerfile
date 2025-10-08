@@ -1,5 +1,5 @@
 # DOCKER_BUILDKIT=1 PROGRESS_NO_TRUNC=1 docker build --platform=linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/ppc64le,linux/arm/v7,linux/arm/v6 -t fpod/catpod:latest --progress plain --no-cache .
-FROM python:3.13-alpine
+FROM python:3.14-alpine
 
 COPY ansible.cfg catpod.yml docker.yml /etc/ansible/
 COPY entrypoint.sh /srv/
