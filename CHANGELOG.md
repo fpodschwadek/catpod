@@ -5,13 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.8] - 2025-10-06
+
+> Generalities are intellectually necessary evils.
+
+### Changed
+
+- Bumped base image version for Dockerfile to `python:3.14-alpine`.
+
 ## [1.6.7] - 2025-10-06
+
+> Stories written before space travel but about space travel
 
 ### Changed
 
 - Added upgrade installation for `community.mysql` collection to Dockerfile.
 
 ## [1.6.6] - 2025-05-05
+
+> I'll be captain one day
 
 ### Changed
 
