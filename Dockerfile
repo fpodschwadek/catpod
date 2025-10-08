@@ -27,6 +27,10 @@ RUN apk update; \
         community.docker \
         --upgrade \
     ; \
+    ansible-galaxy collection install \
+        community.mysql \
+        --upgrade \
+    ; \
     chmod +x /srv/entrypoint.sh; \
     # Add catpod user and group with specific UID/GID
     addgroup -g 10999 catpod; \
