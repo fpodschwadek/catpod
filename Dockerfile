@@ -7,37 +7,42 @@ COPY entrypoint.sh /srv/
 ARG PIP_ROOT_USER_ACTION=ignore
 ARG PIP_BREAK_SYSTEM_PACKAGES=true
 
-RUN apk update; \
-    apk upgrade --available; \
+RUN --mount=type=cache,target=/var/cache/apk \
+    --mount=type=cache,target=/root/.cache/pip \
+    apk update && \
+    apk upgrade --available && \
     apk add --no-cache --update \
         docker-cli-compose \
         git \
-        openssh-client \
-    ; \
+        openssh-client && \
     # Continue with other installations
-    pip install --upgrade pip; \
-    pip3 install ansible; \
-    pip3 install docker; \
-    pip3 install requests; \
-    pip3 install python-memcached; \
+    pip install --upgrade pip && \
+    pip3 install ansible && \
+    pip3 install docker && \
+    pip3 install requests && \
+    pip3 install python-memcached && \
     # Make sure that we have the latest version of relevant
     # collections. This is not always the case for collections
     # that are automatically co-installed.
     ansible-galaxy collection install \
         community.docker \
-        --upgrade \
-    ; \
+        --upgrade && \
     ansible-galaxy collection install \
         community.mysql \
-        --upgrade \
-    ; \
-    chmod +x /srv/entrypoint.sh; \
+        --upgrade && \
+    # Cleanup to reduce image size
+    rm -rf /var/cache/apk/* \
+           /root/.cache/pip/* \
+           /tmp/* \
+           /usr/share/man/* \
+           /usr/share/doc/* && \
+    chmod +x /srv/entrypoint.sh && \
     # Add catpod user and group with specific UID/GID
-    addgroup -g 10999 catpod; \
-    adduser -D -u 10999 -G catpod catpod; \
+    addgroup -g 10999 catpod && \
+    adduser -D -u 10999 -G catpod catpod && \
     # Give appropriate permissions
-    chown -R catpod:catpod /srv; \
-    chown -R catpod:catpod /etc/ansible;
+    chown -R catpod:catpod /srv && \
+    chown -R catpod:catpod /etc/ansible
 
 WORKDIR /srv
 # Switch to non-root user
