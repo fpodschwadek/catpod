@@ -1,4 +1,5 @@
 # Main Docker application container list.
+---
 plugin: community.docker.docker_containers
 filters:
   - include: "'catpod.inventory.group' in docker_config.Labels and docker_config.Labels['catpod.inventory.group'] == 'kittens'"
