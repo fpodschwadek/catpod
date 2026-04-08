@@ -18,7 +18,10 @@ jobs:
           imagestuff:
             - '.dockerignore'
             - 'ansible.cfg'
+            - 'catpod.yml'
+            - 'docker.yml'
             - 'Dockerfile'
+            - 'entrypoint.sh'
 
     - name: Set up Docker Buildx
       if: steps.filter.outputs.imagestuff == 'true'
@@ -33,23 +36,22 @@ jobs:
         file: ./Dockerfile
         push: false
         load: true
-        tags: ansible-docker:${{ github.run_number }}
+        tags: catpod-test:${{ github.run_number }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-    - name: Run container and verify files
+    - name: Verify binaries exist
       if: steps.filter.outputs.imagestuff == 'true'
       run: |
-        # Run the container with overridden entrypoint
-        CONTAINER_ID=$(docker run -d --entrypoint /bin/ash ansible-docker:${{ github.run_number }} -c "sleep 30")
+        IMAGE="catpod-test:${{ github.run_number }}"
+        CONTAINER_ID=$(docker run -d --entrypoint /bin/ash "$IMAGE" -c "sleep 30")
 
-        # Check if files exist
         FILES_TO_CHECK=("/usr/local/bin/ansible-galaxy" "/usr/local/bin/ansible-vault" "/usr/local/bin/ansible-playbook")
         MISSING_FILES=()
 
         for FILE in "${FILES_TO_CHECK[@]}"; do
           echo "Checking for $FILE..."
-          if ! docker exec $CONTAINER_ID [ -f "$FILE" ]; then
+          if ! docker exec "$CONTAINER_ID" [ -f "$FILE" ]; then
             MISSING_FILES+=("$FILE")
             echo "❌ File $FILE not found"
           else
@@ -57,12 +59,172 @@ jobs:
           fi
         done
 
-        # Clean up container
-        docker stop $CONTAINER_ID
-        docker rm $CONTAINER_ID
+        docker stop "$CONTAINER_ID" > /dev/null
+        docker rm "$CONTAINER_ID" > /dev/null
 
-        # Fail the workflow if any files are missing
         if [ ${#MISSING_FILES[@]} -ne 0 ]; then
           echo "The following required files are missing: ${MISSING_FILES[*]}"
           exit 1
+        fi
+
+    - name: Test runs as non-root user
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+        OUTPUT=$(docker run --rm --entrypoint /bin/ash "$IMAGE" -c "id")
+        echo "Container user: $OUTPUT"
+
+        if ! echo "$OUTPUT" | grep -q "uid=10999(catpod)"; then
+          echo "❌ Expected uid=10999(catpod)"
+          exit 1
+        fi
+        echo "✅ Running as catpod (UID 10999)"
+
+    - name: Test Ansible configuration
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+        OUTPUT=$(docker run --rm --entrypoint /bin/ash "$IMAGE" -c "ansible-config dump --only-changed")
+        echo "$OUTPUT"
+
+        FAILED=0
+        for EXPECTED in "DEFAULT_FORKS" "DEFAULT_GATHERING" "ANSIBLE_PIPELINING"; do
+          if echo "$OUTPUT" | grep -q "$EXPECTED"; then
+            echo "✅ $EXPECTED is set"
+          else
+            echo "❌ $EXPECTED not found in active config"
+            FAILED=1
+          fi
+        done
+
+        if [ "$FAILED" -eq 1 ]; then
+          exit 1
+        fi
+
+    - name: Test playbook mode
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+
+        # Remove any leftover hello-world container from previous runs
+        docker rm -f hello-world 2>/dev/null || true
+
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "${{ github.workspace }}/test.yml:/tmp/test.yml" \
+          --group-add $(stat -c '%g' /var/run/docker.sock) \
+          "$IMAGE" /tmp/test.yml
+
+        if docker ps -a --format '{{.Names}}' | grep -q "^hello-world$"; then
+          echo "✅ Playbook created the hello-world container"
+        else
+          echo "❌ hello-world container not found"
+          exit 1
+        fi
+
+        # Clean up
+        docker rm -f hello-world 2>/dev/null || true
+
+    - name: Test vault mode
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+        OUTPUT=$(echo 'testpassword' | docker run --rm -i "$IMAGE" \
+          vault encrypt_string 'secretvalue' --name 'myvar' --vault-password-file /dev/stdin)
+        echo "$OUTPUT"
+
+        if echo "$OUTPUT" | grep -q '\$ANSIBLE_VAULT'; then
+          echo "✅ Vault encryption produced valid output"
+        else
+          echo "❌ Expected \$ANSIBLE_VAULT in output"
+          exit 1
+        fi
+
+    - name: Test galaxy mode
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+        OUTPUT=$(docker run --rm "$IMAGE" galaxy collection list)
+        echo "$OUTPUT"
+
+        FAILED=0
+        for COLLECTION in "community.docker" "community.mysql"; do
+          if echo "$OUTPUT" | grep -q "$COLLECTION"; then
+            echo "✅ Collection $COLLECTION is installed"
+          else
+            echo "❌ Collection $COLLECTION not found"
+            FAILED=1
+          fi
+        done
+
+        if [ "$FAILED" -eq 1 ]; then
+          exit 1
+        fi
+
+    - name: Test socket warning when not mounted
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+
+        # Run without Docker socket; use a playbook that doesn't need Docker
+        # so the entrypoint warning fires but ansible-playbook can still run.
+        STDERR=$(docker run --rm "$IMAGE" --version 2>&1 >/dev/null || true)
+        echo "$STDERR"
+
+        if echo "$STDERR" | grep -q "Docker socket not found"; then
+          echo "✅ Socket-not-mounted warning displayed"
+        else
+          echo "❌ Expected 'Docker socket not found' warning on stderr"
+          exit 1
+        fi
+
+    - name: Test socket permission error without --group-add
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+
+        # Mount the socket but don't grant group access
+        STDERR=$(docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          "$IMAGE" --version 2>&1 || true)
+        echo "$STDERR"
+
+        if echo "$STDERR" | grep -q "Cannot access Docker socket"; then
+          echo "✅ Socket permission error displayed"
+        else
+          # On some CI runners the docker socket is world-readable,
+          # so the permission check may pass. That's acceptable.
+          echo "⚠️  Permission error not triggered (socket may be world-accessible on this runner)"
+        fi
+
+    - name: Test CATPOD_INVENTORY_GROUP substitution
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+
+        # Run with the real entrypoint so the sed substitution executes.
+        # --version makes ansible-playbook exit quickly.
+        docker run \
+          -e CATPOD_INVENTORY_GROUP=myproject \
+          --name catpod-test-group \
+          "$IMAGE" --version > /dev/null 2>&1 || true
+
+        # Extract the file from the stopped container
+        OUTPUT=$(docker cp catpod-test-group:/etc/ansible/docker.yml - | tar -xO)
+        echo "$OUTPUT"
+
+        docker rm catpod-test-group > /dev/null
+
+        if echo "$OUTPUT" | grep -q "myproject"; then
+          echo "✅ Inventory group substituted to 'myproject'"
+        else
+          echo "❌ Expected 'myproject' in docker.yml"
+          exit 1
+        fi
+
+        if echo "$OUTPUT" | grep -q "kittens"; then
+          echo "❌ Default group name 'kittens' still present"
+          exit 1
+        else
+          echo "✅ Default group name 'kittens' replaced"
         fi
