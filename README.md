@@ -48,6 +48,35 @@ docker run -it --group-add $(stat -c '%g' /var/run/docker.sock) fpod/catpod vaul
 
 (For more details see https://docs.ansible.com/ansible/latest/vault_guide/vault_encrypting_content.html#creating-encrypted-variables.)
 
+## Profiling
+
+To enable task profiling for a run, pass the `ANSIBLE_CALLBACKS_ENABLED` environment variable:
+
+```bash
+docker run -it \
+  -e ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ./playbook.yml:/srv/playbook.yml \
+  --group-add $(stat -c '%g' /var/run/docker.sock) \
+  --rm fpod/catpod /srv/playbook.yml
+```
+
+This enables the `profile_tasks` and `timer` callbacks for that single run, showing per-task execution times and a total elapsed time summary.
+
+## Testing
+
+To run the test suite locally:
+
+```bash
+./test.sh
+```
+
+This builds the Docker image and runs all tests (binary checks, entrypoint command modes, socket diagnostics, Ansible configuration, user permissions, and inventory group substitution). To skip the build and test against an existing image:
+
+```bash
+./test.sh --no-build
+```
+
 ## Roadmap
 
 What is going to happen next?
