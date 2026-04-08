@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-04-08
+
+> Progress isn't made by early risers. It's made by lazy men trying to find easier ways to do something.
+
+### Added
+
+- Added CI tests for all three entrypoint command modes: playbook execution, vault encryption, and galaxy collection listing.
+- Added CI tests for Docker socket diagnostics: missing socket warning and permission error.
+- Added CI test for `CATPOD_INVENTORY_GROUP` environment variable substitution.
+- Added CI test verifying the container runs as non-root user `catpod` (UID 10999).
+- Added CI test verifying key Ansible configuration settings (`DEFAULT_FORKS`, `DEFAULT_GATHERING`, `ANSIBLE_PIPELINING`).
+- Expanded CI path filter to also trigger on changes to `catpod.yml`, `docker.yml`, and `entrypoint.sh`.
+
+### Changed
+
+- Combined separate `pip3 install` commands into a single invocation for faster dependency resolution during image builds.
+- Combined separate `ansible-galaxy collection install` commands into a single invocation to avoid redundant metadata fetches.
+- Removed unused BuildKit cache mounts for `/var/cache/apk` and `/root/.cache/pip` from Dockerfile, as they provided no benefit for the project's infrequent build pattern.
+- Removed redundant `pip install --upgrade pip` step from Dockerfile.
+- Disabled `profile_tasks` and `timer` callbacks by default in `ansible.cfg` to reduce per-task overhead. They can be enabled per-run via `-e ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer`.
+- Trimmed inventory plugin list in `ansible.cfg` to only the required plugins (`yaml`, `community.docker.docker_containers`), reducing unnecessary plugin loading on every Ansible startup.
+- Replaced `docker info` with a file permission check in `entrypoint.sh` for faster Docker socket accessibility detection at container startup.
+- Replaced bash-style `[[ ]]` test with POSIX-compatible `[ ]` in `entrypoint.sh` to match the `#!/bin/ash` shebang.
+- Stripped `ansible.cfg` down to only active settings, removing ~1000 lines of commented-out defaults.
+
+### Removed
+
+- Removed `python-memcached` from pip dependencies, as it is no longer used since the switch to `jsonfile` fact caching in v1.7.0.
+
 ## [1.7.0] - 2025-10-22
 
 > With few ambitions, most people allowed efficient machines to perform everyday tasks for them.
