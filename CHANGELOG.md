@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2026-04-09
+
+### Changed
+
+- Restored cleanup of `/root/.cache/pip/` and `/var/cache/apk/` in Dockerfile, which were inadvertently removed in v1.8.0, causing ~165 MB of build cache to be baked into the image.
+- Added `--no-cache-dir` flag to `pip3 install` to prevent pip from writing download cache in the first place.
+- Added cleanup of unused Python standard library modules (`ensurepip`, `idlelib`, `turtle`, `test`, `tkinter`) to further reduce image size.
+
 ## [1.8.0] - 2026-04-08
 
 > Progress isn't made by early risers. It's made by lazy men trying to find easier ways to do something.

@@ -14,7 +14,7 @@ RUN apk update && \
         git \
         openssh-client && \
     # Continue with other installations
-    pip3 install ansible docker requests && \
+    pip3 install --no-cache-dir ansible docker requests && \
     # Make sure that we have the latest version of relevant
     # collections. This is not always the case for collections
     # that are automatically co-installed.
@@ -24,8 +24,14 @@ RUN apk update && \
         --upgrade && \
     # Cleanup to reduce image size
     rm -rf /tmp/* \
+           /var/cache/apk/* \
            /usr/share/man/* \
-           /usr/share/doc/* && \
+           /usr/share/doc/* \
+           /usr/lib/python*/ensurepip \
+           /usr/lib/python*/idlelib \
+           /usr/lib/python*/turtle* \
+           /usr/lib/python*/test \
+           /usr/lib/python*/tkinter && \
     chmod +x /srv/entrypoint.sh && \
     # Add catpod user and group with specific UID/GID
     addgroup -g 10999 catpod && \
