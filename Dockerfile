@@ -13,7 +13,8 @@ RUN apk update && \
         docker-cli-compose \
         git \
         openssh-client \
-        su-exec && \
+        su-exec \
+        tini && \
     # Continue with other installations
     pip3 install --no-cache-dir ansible docker requests && \
     # Make sure that we have the latest version of relevant
@@ -45,4 +46,7 @@ WORKDIR /srv
 # No USER instruction: the entrypoint starts as root only to grant the
 # 'catpod' user access to the Docker socket, then switches to 'catpod'.
 
-ENTRYPOINT ["/srv/entrypoint.sh"]
+# tini runs as PID 1 and forwards signals (e.g. SIGTERM from `docker stop`) to
+# the whole process group, so Ansible and its workers can shut down cleanly.
+# -s keeps tini working when it isn't PID 1 (e.g. with `docker run --init`).
+ENTRYPOINT ["/sbin/tini", "-s", "-g", "--", "/srv/entrypoint.sh"]

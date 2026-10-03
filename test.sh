@@ -249,6 +249,35 @@ else
   fail "Failing vault command exited with 0"
 fi
 
+# ─────────────────────────────────────────────────────────────────────
+
+run_test "docker stop terminates promptly"
+
+docker rm -f catpod-test-stop 2>/dev/null || true
+
+docker run -d \
+  --name catpod-test-stop \
+  -v "$SCRIPT_DIR/test-sleep.yml:/tmp/test-sleep.yml" \
+  "$IMAGE" /tmp/test-sleep.yml > /dev/null
+
+# Wait until the long-running task has started.
+for _ in $(seq 30); do
+  docker logs catpod-test-stop 2>&1 | grep -q "TASK \[Sleep" && break
+  sleep 1
+done
+
+START=$(date +%s)
+docker stop catpod-test-stop > /dev/null
+DURATION=$(( $(date +%s) - START ))
+docker rm catpod-test-stop > /dev/null
+
+# Without signal forwarding, Docker waits its full 10 s timeout before killing.
+if [ "$DURATION" -lt 5 ]; then
+  pass "Container stopped after ${DURATION}s"
+else
+  fail "Container took ${DURATION}s to stop (signals not forwarded?)"
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────
 
 echo ""

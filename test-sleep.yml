@@ -1,0 +1,9 @@
+---
+  - name: Test Playbook Long-Running
+    hosts: localhost
+    connection: local
+    tasks:
+
+      - name: Sleep so the container can be stopped while it runs
+        ansible.builtin.command: sleep 60
+        changed_when: false

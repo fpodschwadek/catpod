@@ -297,3 +297,32 @@ jobs:
         if [ "$FAILED" -eq 1 ]; then
           exit 1
         fi
+
+    - name: Test docker stop terminates promptly
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+
+        docker run -d \
+          --name catpod-test-stop \
+          -v "${{ github.workspace }}/test-sleep.yml:/tmp/test-sleep.yml" \
+          "$IMAGE" /tmp/test-sleep.yml > /dev/null
+
+        # Wait until the long-running task has started.
+        for _ in $(seq 30); do
+          docker logs catpod-test-stop 2>&1 | grep -q "TASK \[Sleep" && break
+          sleep 1
+        done
+
+        START=$(date +%s)
+        docker stop catpod-test-stop > /dev/null
+        DURATION=$(( $(date +%s) - START ))
+        docker rm catpod-test-stop > /dev/null
+
+        # Without signal forwarding, Docker waits its full 10 s timeout before killing.
+        if [ "$DURATION" -lt 5 ]; then
+          echo "✅ Container stopped after ${DURATION}s"
+        else
+          echo "❌ Container took ${DURATION}s to stop (signals not forwarded?)"
+          exit 1
+        fi
