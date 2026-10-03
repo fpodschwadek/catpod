@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The release workflow can now also publish when started manually: tick "publish" and enter the version (e.g. `2.0.0`). The image is built from the branch or tag selected for the run, independently of where the version's git tag points, so a version can be (re-)published after a failed release build without creating a new version. "latest" is optional and never applied to pre-release versions.
+
 ### Fixed
 
 - Fixed the image build for `linux/arm/v6` and `linux/arm/v7`: removed the `pip3 check` build step, which rejected Alpine's 32-bit ARM Python packages because their metadata names the platform of the 64-bit machine they were built on (`armv8l`). The installation itself already fails if an Alpine package doesn't satisfy a requirement, so no check is lost.
