@@ -27,9 +27,12 @@ RUN apk update && \
         py3-markupsafe \
         py3-yaml && \
     # Install pinned Python packages; every file is checked against its hash.
+    # This also fails if one of Alpine's py3-* packages doesn't satisfy a
+    # requirement: pip would then have to install it, which --require-hashes
+    # refuses for anything not pinned in requirements.txt. (No `pip3 check`:
+    # it rejects Alpine's 32-bit ARM packages, whose metadata names the
+    # 64-bit build machine's platform, armv8l.)
     pip3 install --no-cache-dir --require-hashes -r /tmp/requirements.txt && \
-    # Fail the build if Alpine's packages don't satisfy Ansible's requirements.
-    pip3 check && \
     # Upgrade selected collections to their newest release within the
     # version ranges in requirements.yml (no new major versions). Install
     # into the shared default path (not root's home), so the catpod user

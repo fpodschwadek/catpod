@@ -27,8 +27,10 @@ jobs:
     name: Build ${{ matrix.platform }}
     runs-on: ${{ matrix.runner }}
     strategy:
-      # A release must contain every platform, so stop early if one fails.
-      fail-fast: true
+      # Let every platform finish, so one failure doesn't hide others. A
+      # release still needs all of them: the merge job only runs if every
+      # build succeeded.
+      fail-fast: false
       matrix:
         include:
           # Fully tested: built natively, full test suite.

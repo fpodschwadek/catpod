@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed the image build for `linux/arm/v6` and `linux/arm/v7`: removed the `pip3 check` build step, which rejected Alpine's 32-bit ARM Python packages because their metadata names the platform of the 64-bit machine they were built on (`armv8l`). The installation itself already fails if an Alpine package doesn't satisfy a requirement, so no check is lost.
+- The release workflow no longer cancels the remaining platform builds when one fails, so all failures show up at once. Images are still only published if every platform succeeds.
+
 ## [2.0.0] - 2026-10-03
 
 ### Added
