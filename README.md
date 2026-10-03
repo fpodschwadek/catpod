@@ -1,5 +1,10 @@
 # CATPOD (Containerised Ansible Tool for Provisioning, Orchestration and Deployment)
 
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/fpodschwadek/catpod/docker-image-push.yml?logo=github)](https://github.com/fpodschwadek/catpod/actions/workflows/docker-image-push.yml)
+[![Docker Image Last Updated](https://img.shields.io/docker/last-updated/fpod/catpod?logo=docker&label=Docker%20image%20last%20updated)](https://hub.docker.com/r/fpod/catpod)
+[![Docker Image Version](https://img.shields.io/docker/v/fpod/catpod?logo=docker&label=Docker%20image%20version)](https://hub.docker.com/r/fpod/catpod)
+[![Docker Image Size](https://img.shields.io/docker/image-size/fpod/catpod?logo=docker&label=Docker%20image%20size)](https://hub.docker.com/r/fpod/catpod)
+
 <p align="center">
     <img src="https://github.com/fpodschwadek/catpod/blob/main/CATPOD_logo.png" alt="CATPOD logo" width="180">
 </p>
