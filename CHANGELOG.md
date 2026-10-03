@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Pinned the base image to `python:3.14.8-alpine3.24` by digest, and all Python packages (including dependencies) by version and hash in the new `requirements.txt`, generated from `requirements.in` with `pip-compile`. Builds are now reproducible, and tampered packages are rejected. Dependabot (`.github/dependabot.yml`) proposes updates as pull requests. Alpine packages are not pinned, so `apk upgrade` keeps picking up security fixes.
 - The container no longer requires `--group-add $(stat -c '%g' /var/run/docker.sock)` to access the Docker socket. The entrypoint now starts as `root`, adds the `catpod` user to the socket's group, and switches to `catpod` via `su-exec` before running any Ansible command. This makes the same `docker run` command work on Linux and macOS (where `stat -c` is not supported). Passing `--group-add` still works but is no longer necessary.
 - The Docker socket permission error is now only shown when the container user is overridden with `--user`, and explains how to grant access in that case.
 - `CATPOD_INVENTORY_GROUP` is now validated: values containing anything other than letters, digits and underscores are rejected.

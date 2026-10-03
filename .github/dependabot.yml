@@ -1,0 +1,18 @@
+# Proposes updates for the pinned base image and Python packages as pull
+# requests. Merging one of them is the only way pinned versions change.
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # Ansible and its dependencies usually need to move together.
+      python-packages:
+        patterns:
+          - "*"

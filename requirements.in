@@ -1,0 +1,12 @@
+# Top-level Python dependencies of the CATPOD image.
+#
+# requirements.txt is generated from this file and pins every package,
+# including dependencies, with hashes. To regenerate it after changing this
+# file, run from the repository root:
+#
+#   docker run --rm -v "$PWD":/w -w /w python:3.14-alpine sh -c \
+#     "pip install -q pip-tools && pip-compile --generate-hashes --strip-extras \
+#      --output-file=requirements.txt requirements.in"
+ansible
+docker
+requests

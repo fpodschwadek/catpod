@@ -22,6 +22,7 @@ jobs:
             - 'docker.yml'
             - 'Dockerfile'
             - 'entrypoint.sh'
+            - 'requirements.txt'
 
     - name: Set up Docker Buildx
       if: steps.filter.outputs.imagestuff == 'true'

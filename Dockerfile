@@ -1,7 +1,9 @@
-FROM python:3.14-alpine
+# Pinned by digest for reproducible builds; Dependabot proposes updates.
+FROM python:3.14.8-alpine3.24@sha256:2e740b2c28a426e74f11396c05e38afb3191acced75045b8d62df573c1dc8ce8
 
 COPY ansible.cfg catpod.yml docker.yml /etc/ansible/
 COPY entrypoint.sh /srv/
+COPY requirements.txt /tmp/
 
 ARG PIP_ROOT_USER_ACTION=ignore
 ARG PIP_BREAK_SYSTEM_PACKAGES=true
@@ -14,8 +16,8 @@ RUN apk update && \
         openssh-client \
         su-exec \
         tini && \
-    # Continue with other installations
-    pip3 install --no-cache-dir ansible docker requests && \
+    # Install pinned Python packages; every file is checked against its hash.
+    pip3 install --no-cache-dir --require-hashes -r /tmp/requirements.txt && \
     # Make sure that we have the latest version of relevant
     # collections. This is not always the case for collections
     # that are automatically co-installed.
