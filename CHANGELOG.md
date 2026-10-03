@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Removed `callbacks_enabled=profile_tasks,timer` from `ansible.cfg`, so the `profile_tasks` and `timer` callbacks are now off by default as intended in v1.8.0. They can still be enabled per-run via `-e ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer`.
+
 ## [1.8.1] - 2026-04-09
 
 ### Changed
