@@ -251,3 +251,49 @@ jobs:
           echo "❌ Expected invalid CATPOD_INVENTORY_GROUP to be rejected"
           exit 1
         fi
+
+    - name: Test exit codes are passed through
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+        FAILED=0
+
+        EXIT=0
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "${{ github.workspace }}/test-user.yml:/tmp/test-user.yml" \
+          "$IMAGE" /tmp/test-user.yml > /dev/null 2>&1 || EXIT=$?
+
+        if [ "$EXIT" -eq 0 ]; then
+          echo "✅ Successful playbook exits with 0"
+        else
+          echo "❌ Successful playbook exited with $EXIT"
+          FAILED=1
+        fi
+
+        EXIT=0
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "${{ github.workspace }}/test-fail.yml:/tmp/test-fail.yml" \
+          "$IMAGE" /tmp/test-fail.yml > /dev/null 2>&1 || EXIT=$?
+
+        if [ "$EXIT" -ne 0 ]; then
+          echo "✅ Failing playbook exits with $EXIT"
+        else
+          echo "❌ Failing playbook exited with 0"
+          FAILED=1
+        fi
+
+        EXIT=0
+        docker run --rm "$IMAGE" vault view /nonexistent > /dev/null 2>&1 || EXIT=$?
+
+        if [ "$EXIT" -ne 0 ]; then
+          echo "✅ Failing vault command exits with $EXIT"
+        else
+          echo "❌ Failing vault command exited with 0"
+          FAILED=1
+        fi
+
+        if [ "$FAILED" -eq 1 ]; then
+          exit 1
+        fi

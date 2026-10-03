@@ -212,6 +212,43 @@ else
   fail "Expected invalid CATPOD_INVENTORY_GROUP to be rejected"
 fi
 
+# ─────────────────────────────────────────────────────────────────────
+
+run_test "Exit codes are passed through"
+
+EXIT=0
+docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$SCRIPT_DIR/test-user.yml:/tmp/test-user.yml" \
+  "$IMAGE" /tmp/test-user.yml > /dev/null 2>&1 || EXIT=$?
+
+if [ "$EXIT" -eq 0 ]; then
+  pass "Successful playbook exits with 0"
+else
+  fail "Successful playbook exited with $EXIT"
+fi
+
+EXIT=0
+docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$SCRIPT_DIR/test-fail.yml:/tmp/test-fail.yml" \
+  "$IMAGE" /tmp/test-fail.yml > /dev/null 2>&1 || EXIT=$?
+
+if [ "$EXIT" -ne 0 ]; then
+  pass "Failing playbook exits with $EXIT"
+else
+  fail "Failing playbook exited with 0"
+fi
+
+EXIT=0
+docker run --rm "$IMAGE" vault view /nonexistent > /dev/null 2>&1 || EXIT=$?
+
+if [ "$EXIT" -ne 0 ]; then
+  pass "Failing vault command exits with $EXIT"
+else
+  fail "Failing vault command exited with 0"
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────
 
 echo ""

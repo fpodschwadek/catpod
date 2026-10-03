@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The container now exits with the exit code of the Ansible command it runs. Previously, it always exited with `0`, even when a playbook, `vault` or `galaxy` command failed, so scripts and CI pipelines could not detect failures.
 - Removed `callbacks_enabled=profile_tasks,timer` from `ansible.cfg`, so the `profile_tasks` and `timer` callbacks are now off by default as intended in v1.8.0. They can still be enabled per-run via `-e ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer`.
 
 ## [1.8.1] - 2026-04-09

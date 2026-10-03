@@ -1,0 +1,9 @@
+---
+  - name: Test Playbook Failure
+    hosts: localhost
+    connection: local
+    tasks:
+
+      - name: Fail on purpose
+        ansible.builtin.fail:
+          msg: This playbook fails on purpose to test the exit code.

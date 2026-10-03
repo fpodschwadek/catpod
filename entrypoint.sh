@@ -66,16 +66,17 @@ if [ -n "$CATPOD_INVENTORY_GROUP" ]; then
     sed -i "s/kittens/$CATPOD_INVENTORY_GROUP/g" /etc/ansible/docker.yml
 fi
 
+# The Ansible commands replace this script via exec, so their exit code
+# becomes the container's exit code (e.g. a failed playbook run fails the
+# container).
 case "$1" in
     galaxy)
         shift
-        /usr/local/bin/ansible-galaxy "$@"
-        exit 0
+        exec /usr/local/bin/ansible-galaxy "$@"
         ;;
     vault)
         shift
-        /usr/local/bin/ansible-vault "$@"
-        exit 0
+        exec /usr/local/bin/ansible-vault "$@"
         ;;
     *)
         # Check Docker socket accessibility
@@ -118,7 +119,6 @@ case "$1" in
             echo "" >&2
         fi
 
-        /usr/local/bin/ansible-playbook "$@"
-        exit 0
+        exec /usr/local/bin/ansible-playbook "$@"
         ;;
 esac
