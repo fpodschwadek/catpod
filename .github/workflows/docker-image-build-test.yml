@@ -4,7 +4,23 @@ on:
   push:
     branches: [ "main" ]
     # Only run when something that goes into the image, or the tests
-    # themselves, changed.
+    # themselves, changed. Keep in sync with the pull_request list below.
+    paths:
+      - '.dockerignore'
+      - 'ansible.cfg'
+      - 'catpod.yml'
+      - 'docker.yml'
+      - 'Dockerfile'
+      - 'entrypoint.sh'
+      - 'requirements.txt'
+      - 'requirements.yml'
+      - 'test*.yml'
+      - '.github/workflows/docker-image-build-test.yml'
+  # Test pull requests before they're merged. Safe for PRs from forks: this
+  # workflow uses no secrets and only gets a read-only token (never switch to
+  # pull_request_target, which runs with the base repository's permissions).
+  pull_request:
+    branches: [ "main" ]
     paths:
       - '.dockerignore'
       - 'ansible.cfg'
