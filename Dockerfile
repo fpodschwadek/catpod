@@ -6,7 +6,7 @@ FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4c
 
 COPY ansible.cfg catpod.yml docker.yml /etc/ansible/
 COPY entrypoint.sh /srv/
-COPY requirements.txt /tmp/
+COPY requirements.txt requirements.yml /tmp/
 
 ARG PIP_ROOT_USER_ACTION=ignore
 ARG PIP_BREAK_SYSTEM_PACKAGES=true
@@ -30,15 +30,18 @@ RUN apk update && \
     pip3 install --no-cache-dir --require-hashes -r /tmp/requirements.txt && \
     # Fail the build if Alpine's packages don't satisfy Ansible's requirements.
     pip3 check && \
-    # Make sure that we have the latest version of relevant
-    # collections. This is not always the case for collections
-    # that are automatically co-installed.
+    # Upgrade selected collections to their newest release within the
+    # version ranges in requirements.yml (no new major versions). Install
+    # into the shared default path (not root's home), so the catpod user
+    # sees them; it takes precedence over the collections bundled with
+    # ansible.
     ansible-galaxy collection install \
-        community.docker \
-        community.mysql \
-        --upgrade && \
+        -r /tmp/requirements.yml \
+        --upgrade \
+        -p /usr/share/ansible/collections && \
     # Cleanup to reduce image size
     rm -rf /tmp/* \
+           /root/.ansible \
            /var/cache/apk/* \
            /usr/share/man/* \
            /usr/share/doc/* \

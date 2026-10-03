@@ -1,0 +1,14 @@
+# Ansible collections upgraded at build time (ansible-galaxy), on top of the
+# versions bundled with the pinned `ansible` pip package (see requirements.in).
+#
+# Each build installs the newest release within these ranges into
+# /usr/share/ansible/collections, which takes precedence over the bundled
+# versions. That picks up fixes before the next `ansible` release bundles them
+# (up to ~4 weeks), while the upper bound keeps out new major versions with
+# breaking changes. Raise the ranges by hand when moving to a new major.
+---
+collections:
+  - name: community.docker
+    version: ">=5.3.0,<6.0.0"
+  - name: community.mysql
+    version: ">=5.0.2,<6.0.0"

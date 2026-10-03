@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The build step that upgrades `community.docker` and `community.mysql` now installs into the shared `/usr/share/ansible/collections` instead of root's home directory, which the `catpod` user can't read. Upgraded collections are now actually used at runtime (they take precedence over the versions bundled with the `ansible` package). The upgrade is limited to the version ranges in the new `requirements.yml` (currently 5.x for both), so a new major version with breaking changes can no longer slip into the image unnoticed. The build no longer leaves Galaxy's cache and token file in `/root/.ansible`.
 - `docker stop` now stops running playbooks immediately. `tini` runs as PID 1 and forwards signals to Ansible and its worker processes; previously, SIGTERM was ignored and Docker killed the container after its 10-second timeout.
 - The container now exits with the exit code of the Ansible command it runs. Previously, it always exited with `0`, even when a playbook, `vault` or `galaxy` command failed, so scripts and CI pipelines could not detect failures.
 - Removed `callbacks_enabled=profile_tasks,timer` from `ansible.cfg`, so the `profile_tasks` and `timer` callbacks are now off by default as intended in v1.8.0. They can still be enabled per-run via `-e ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer`.

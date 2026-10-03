@@ -13,6 +13,7 @@ on:
       - 'Dockerfile'
       - 'entrypoint.sh'
       - 'requirements.txt'
+      - 'requirements.yml'
       - 'test*.yml'
       - '.github/workflows/docker-image-build-test.yml'
 
