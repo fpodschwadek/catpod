@@ -34,6 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The container now exits with the exit code of the Ansible command it runs. Previously, it always exited with `0`, even when a playbook, `vault` or `galaxy` command failed, so scripts and CI pipelines could not detect failures.
 - Removed `callbacks_enabled=profile_tasks,timer` from `ansible.cfg`, so the `profile_tasks` and `timer` callbacks are now off by default as intended in v1.8.0. They can still be enabled per-run via `-e ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer`.
 
+### Removed
+
+- Removed the `jsonfile` fact cache from `ansible.cfg`. It wrote to `/tmp/ansible_facts_cache` inside the container, which is lost when the container is removed (CATPOD is meant to run with `--rm`), so it didn't carry facts over between runs. Facts are still cached in memory during a run. To persist facts across runs, set `ANSIBLE_CACHE_PLUGIN=jsonfile` and point `ANSIBLE_CACHE_PLUGIN_CONNECTION` to a mounted directory that the `catpod` user (UID 10999) can write to.
+- Removed the duplicate `pipelining` setting from the `[ssh_connection]` section of `ansible.cfg`; the one in `[connection]` applies to all connection plugins, including SSH.
+- Removed `requests` from the top-level Python dependencies; it's still installed (and pinned) as a dependency of `docker`.
+
 ## [1.8.1] - 2026-04-09
 
 ### Changed
