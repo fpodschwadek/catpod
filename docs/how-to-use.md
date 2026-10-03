@@ -63,6 +63,31 @@ This is, of course, a toy example of how to use CATPOD; you don't really need a 
 
 The `fpod/catpod` image is available for `linux/amd64` and `linux/arm64` (including Apple Silicon Macs), which are fully tested on every release. Images for `linux/386`, `linux/arm/v7`, `linux/arm/v6` (e.g. Raspberry Pi), `linux/ppc64le`, `linux/s390x` and `linux/riscv64` are provided on a best-effort basis: they are built and smoke-tested on every release, but not fully tested. All platforms share the same tag, and Docker automatically pulls the image for your machine. For any other platform, build the image yourself from the Dockerfile.
 
+## Optional Hardening
+
+You can restrict the CATPOD container further than Docker does by default:
+
+```sh
+docker run -it \
+  --cap-drop ALL \
+  --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add KILL \
+  --security-opt no-new-privileges \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ./test.yml:/tmp/test.yml \
+  --rm fpod/catpod \
+    /tmp/test.yml
+```
+
+`--cap-drop ALL` removes all of root's special privileges (Linux capabilities) inside the container, and the `--cap-add` options give back only the four that CATPOD's startup needs:
+
+- `SETUID` and `SETGID` to switch from `root` to the `catpod` user,
+- `CHOWN` to hand the terminal and input/output streams over to `catpod`,
+- `KILL` to pass signals such as `docker stop` or Ctrl+C on to Ansible (without it, the container is still stopped, but Ansible is killed instead of being terminated).
+
+`--security-opt no-new-privileges` prevents any process in the container from gaining privileges later on, e.g. through setuid programs.
+
+Keep in mind that this limits the CATPOD container itself, not what can be done through the Docker socket: access to the socket is equivalent to root access on the host, so only run playbooks you trust.
+
 ## Container Commands Overview
 
 ### `{ playbook path }`

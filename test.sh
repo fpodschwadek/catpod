@@ -303,6 +303,49 @@ else
   fail "Password hashes in /etc/shadow for: $OUTPUT"
 fi
 
+# ─────────────────────────────────────────────────────────────────────
+
+run_test "Runs with the documented hardening options"
+
+# Must match "Optional Hardening" in docs/how-to-use.md and the README.
+HARDENING="--cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add KILL --security-opt no-new-privileges"
+
+# shellcheck disable=SC2086 # word splitting of $HARDENING is intended
+OUTPUT=$(docker run --rm $HARDENING \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$SCRIPT_DIR/test-user.yml:/tmp/test-user.yml" \
+  "$IMAGE" /tmp/test-user.yml 2>&1)
+
+if echo "$OUTPUT" | grep -q "uid=10999(catpod)"; then
+  pass "Playbook runs as catpod"
+else
+  fail "Playbook failed with hardening options: $OUTPUT"
+fi
+
+docker rm -f catpod-test-hardened 2>/dev/null || true
+
+# shellcheck disable=SC2086
+docker run -d $HARDENING \
+  --name catpod-test-hardened \
+  -v "$SCRIPT_DIR/test-sleep.yml:/tmp/test-sleep.yml" \
+  "$IMAGE" /tmp/test-sleep.yml > /dev/null
+
+for _ in $(seq 30); do
+  docker logs catpod-test-hardened 2>&1 | grep -q "TASK \[Sleep" && break
+  sleep 1
+done
+
+docker stop catpod-test-hardened > /dev/null
+EXIT=$(docker inspect catpod-test-hardened --format '{{.State.ExitCode}}')
+docker rm catpod-test-hardened > /dev/null
+
+# 143 = terminated by SIGTERM; tini exits with 1 if it can't forward signals.
+if [ "$EXIT" -eq 143 ]; then
+  pass "docker stop forwards SIGTERM (exit 143)"
+else
+  fail "docker stop exited with $EXIT (signal forwarding failed?)"
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────
 
 echo ""

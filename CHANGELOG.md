@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Documented optional hardening (README and docs): CATPOD runs with all Linux capabilities dropped except `CHOWN`, `SETUID`, `SETGID` and `KILL`, and with `--security-opt no-new-privileges`. A test ensures this keeps working.
 - Added a test ensuring that no file in the image is accessible through a group other than `root` or `catpod` (except `/etc/shadow`, which must contain no password hashes). The `catpod` user joins whichever group owns the host's Docker socket, so this keeps that group membership from granting anything else.
 - Images are now published for `linux/386`, `linux/arm/v7`, `linux/arm/v6`, `linux/ppc64le`, `linux/s390x` and `linux/riscv64` (best effort, smoke-tested), in addition to the fully tested `linux/amd64` and `linux/arm64`. All platforms share one tag.
 

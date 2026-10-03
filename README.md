@@ -73,6 +73,16 @@ docker run -it \
 
 This enables the `profile_tasks` and `timer` callbacks for that single run, showing per-task execution times and a total elapsed time summary.
 
+## Hardening
+
+CATPOD also runs with all Linux capabilities dropped except the four its startup needs:
+
+```bash
+docker run -it --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --cap-add KILL --security-opt no-new-privileges -v /var/run/docker.sock:/var/run/docker.sock -v ./test.yml:/tmp/test.yml --rm fpod/catpod /tmp/test.yml
+```
+
+See the [docs](https://fpodschwadek.github.io/catpod/how-to-use.html#optional-hardening) for what each option does. Note that access to the Docker socket is equivalent to root access on the host, so only run playbooks you trust.
+
 ## Testing
 
 To run the test suite locally:
