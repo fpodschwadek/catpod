@@ -15,6 +15,12 @@ if [ "$(id -u)" = "0" ]; then
         # (e.g. with some Docker Desktop setups), it is either accessible
         # without group membership or the check below reports the problem.
         if [ "$SOCK_GID" != "0" ]; then
+            # Reuse an existing group with this GID, e.g. Alpine's 'ping'
+            # (999) for Debian/Ubuntu hosts. Its name doesn't matter: access
+            # is checked by GID only, so a new group with the same GID would
+            # grant exactly the same. The only file in the image owned by a
+            # group other than root or catpod is /etc/shadow (GID 42), which
+            # holds no password hashes; test.sh checks that this stays so.
             SOCK_GROUP=$(awk -F: -v gid="$SOCK_GID" '$3 == gid { print $1; exit }' /etc/group)
 
             if [ -z "$SOCK_GROUP" ]; then

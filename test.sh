@@ -278,6 +278,31 @@ else
   fail "Container took ${DURATION}s to stop (signals not forwarded?)"
 fi
 
+# ─────────────────────────────────────────────────────────────────────
+
+run_test "No sensitive group-owned files"
+
+# catpod joins whatever group owns the host's Docker socket, so no file in
+# the image may be accessible through another group (see entrypoint.sh).
+OUTPUT=$(docker run --rm --entrypoint /bin/ash "$IMAGE" -c \
+  'find / -xdev ! -group 0 ! -group 10999 ! -path /etc/shadow ! -path /etc/shadow- 2>/dev/null')
+
+if [ -z "$OUTPUT" ]; then
+  pass "Only /etc/shadow is owned by another group"
+else
+  fail "Unexpected group-owned files: $OUTPUT"
+fi
+
+# Hashes start with "$" (e.g. "$6$..."); locked or disabled accounts have "!" or "*".
+OUTPUT=$(docker run --rm --entrypoint /bin/ash "$IMAGE" -c \
+  'cut -d: -f1,2 /etc/shadow | grep -F ":\$" | cut -d: -f1')
+
+if [ -z "$OUTPUT" ]; then
+  pass "/etc/shadow contains no password hashes"
+else
+  fail "Password hashes in /etc/shadow for: $OUTPUT"
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────
 
 echo ""
