@@ -72,11 +72,11 @@ fi
 case "$1" in
     galaxy)
         shift
-        exec /usr/local/bin/ansible-galaxy "$@"
+        exec /usr/bin/ansible-galaxy "$@"
         ;;
     vault)
         shift
-        exec /usr/local/bin/ansible-vault "$@"
+        exec /usr/bin/ansible-vault "$@"
         ;;
     *)
         # Check Docker socket accessibility
@@ -119,6 +119,6 @@ case "$1" in
             echo "" >&2
         fi
 
-        exec /usr/local/bin/ansible-playbook "$@"
+        exec /usr/bin/ansible-playbook "$@"
         ;;
 esac

@@ -47,7 +47,7 @@ jobs:
         IMAGE="catpod-test:${{ github.run_number }}"
         CONTAINER_ID=$(docker run -d --entrypoint /bin/ash "$IMAGE" -c "sleep 30")
 
-        FILES_TO_CHECK=("/usr/local/bin/ansible-galaxy" "/usr/local/bin/ansible-vault" "/usr/local/bin/ansible-playbook")
+        FILES_TO_CHECK=("/usr/bin/ansible-galaxy" "/usr/bin/ansible-vault" "/usr/bin/ansible-playbook")
         MISSING_FILES=()
 
         for FILE in "${FILES_TO_CHECK[@]}"; do

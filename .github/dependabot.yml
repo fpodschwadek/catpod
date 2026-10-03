@@ -1,5 +1,6 @@
-# Proposes updates for the pinned base image and Python packages as pull
-# requests. Merging one of them is the only way pinned versions change.
+# Proposes updates for the pinned base image, Python packages and GitHub
+# Actions as pull requests. Merging one of them is the only way pinned
+# versions change.
 version: 2
 updates:
   - package-ecosystem: docker
@@ -16,3 +17,10 @@ updates:
       python-packages:
         patterns:
           - "*"
+
+  # Actions are pinned to commit SHAs; Dependabot updates the SHA and the
+  # version comment next to it.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

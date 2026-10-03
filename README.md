@@ -24,6 +24,17 @@ These days, lots of stuff is done with Docker (or Podman, or whatever your favou
 
 To do this, we need to mount the Docker socket of the host system into the CATPOD container. We can then use it to create and provision containers for other applications on the host system (see [Jérôme Petazzoni's Post](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/#the-socket-solution) for this wonderfully simple strategy).
 
+## Supported Platforms
+
+The `fpod/catpod` image is published for several platforms under the same tag; Docker automatically pulls the image for your machine.
+
+| Platform | Support |
+|---|---|
+| `linux/amd64`, `linux/arm64` (incl. Apple Silicon Macs) | Fully tested on every release |
+| `linux/386`, `linux/arm/v7`, `linux/arm/v6` (e.g. Raspberry Pi), `linux/ppc64le`, `linux/s390x`, `linux/riscv64` | Best effort: built and smoke-tested on every release |
+
+For any other platform, build the image yourself from the Dockerfile.
+
 ## Examples
 
 For now, there's only one measly example but more (for more complex cases) will be following soon.

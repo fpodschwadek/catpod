@@ -50,7 +50,7 @@ run_test "Verify binaries exist"
 
 CONTAINER_ID=$(docker run -d --entrypoint /bin/ash "$IMAGE" -c "sleep 30")
 
-for FILE in /usr/local/bin/ansible-galaxy /usr/local/bin/ansible-vault /usr/local/bin/ansible-playbook; do
+for FILE in /usr/bin/ansible-galaxy /usr/bin/ansible-vault /usr/bin/ansible-playbook; do
   if docker exec "$CONTAINER_ID" [ -f "$FILE" ]; then
     pass "$FILE exists"
   else

@@ -59,6 +59,10 @@ Passing the playbook path as command prompts the container to internally use the
 
 This is, of course, a toy example of how to use CATPOD; you don't really need a utility container to start another simple container. Have a look at the [Use Cases chapter](use-cases.html) for more complex examples.
 
+## Supported Platforms
+
+The `fpod/catpod` image is available for `linux/amd64` and `linux/arm64` (including Apple Silicon Macs), which are fully tested on every release. Images for `linux/386`, `linux/arm/v7`, `linux/arm/v6` (e.g. Raspberry Pi), `linux/ppc64le`, `linux/s390x` and `linux/riscv64` are provided on a best-effort basis: they are built and smoke-tested on every release, but not fully tested. All platforms share the same tag, and Docker automatically pulls the image for your machine. For any other platform, build the image yourself from the Dockerfile.
+
 ## Container Commands Overview
 
 ### `{ playbook path }`
@@ -99,7 +103,7 @@ In the above example, the local `local_collections` is mounted into the containe
 Running `galaxy collection list` without a collection name prints this warning:
 
 ```
-[WARNING]: Collection at '/usr/local/lib/python3.14/site-packages/ansible/_internal/ansible_collections/ansible/_protomatter' does not have a MANIFEST.json file, nor has it galaxy.yml: cannot detect version.
+[WARNING]: Collection at '/usr/lib/python3.14/site-packages/ansible/_internal/ansible_collections/ansible/_protomatter' does not have a MANIFEST.json file, nor has it galaxy.yml: cannot detect version.
 ```
 
 You can safely ignore it. `ansible._protomatter` is an internal part of Ansible itself and Ansible currently fails to hide it from the list (see [ansible/ansible#85689](https://github.com/ansible/ansible/issues/85689)).

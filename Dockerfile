@@ -1,5 +1,8 @@
 # Pinned by digest for reproducible builds; Dependabot proposes updates.
-FROM python:3.14.8-alpine3.24@sha256:2e740b2c28a426e74f11396c05e38afb3191acced75045b8d62df573c1dc8ce8
+# Plain Alpine instead of the official Python image: Alpine provides Python
+# and the compiled Python packages prebuilt for every platform we publish,
+# so no platform has to compile them (see requirements.in).
+FROM alpine:3.24.2@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6
 
 COPY ansible.cfg catpod.yml docker.yml /etc/ansible/
 COPY entrypoint.sh /srv/
@@ -15,9 +18,18 @@ RUN apk update && \
         git \
         openssh-client \
         su-exec \
-        tini && \
+        tini \
+        python3 \
+        py3-pip \
+        # Python packages with compiled code, left out of requirements.txt
+        py3-cffi \
+        py3-cryptography \
+        py3-markupsafe \
+        py3-yaml && \
     # Install pinned Python packages; every file is checked against its hash.
     pip3 install --no-cache-dir --require-hashes -r /tmp/requirements.txt && \
+    # Fail the build if Alpine's packages don't satisfy Ansible's requirements.
+    pip3 check && \
     # Make sure that we have the latest version of relevant
     # collections. This is not always the case for collections
     # that are automatically co-installed.
