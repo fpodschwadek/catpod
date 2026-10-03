@@ -346,6 +346,30 @@ else
   fail "docker stop exited with $EXIT (signal forwarding failed?)"
 fi
 
+# ─────────────────────────────────────────────────────────────────────
+
+run_test "Docker Compose works"
+
+docker rm -f $(docker ps -aq --filter label=com.docker.compose.project=catpod-test-compose) 2>/dev/null || true
+
+EXIT=0
+OUTPUT=$(docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$SCRIPT_DIR/test-compose.yml:/tmp/test-compose.yml" \
+  "$IMAGE" /tmp/test-compose.yml 2>&1) || EXIT=$?
+
+if [ "$EXIT" -eq 0 ]; then
+  pass "Compose $(echo "$OUTPUT" | grep -o 'compose_version.stdout: [0-9.]*' | grep -o '[0-9.]*$') started and removed a project via Ansible"
+else
+  fail "Compose playbook failed: $OUTPUT"
+fi
+
+if [ -z "$(docker ps -aq --filter label=com.docker.compose.project=catpod-test-compose)" ]; then
+  pass "No Compose containers left behind"
+else
+  fail "Compose containers left behind"
+fi
+
 # ── Summary ──────────────────────────────────────────────────────────
 
 echo ""

@@ -14,7 +14,7 @@ ARG PIP_BREAK_SYSTEM_PACKAGES=true
 RUN apk update && \
     apk upgrade --available && \
     apk add --no-cache --update \
-        docker-cli-compose \
+        docker-cli \
         git \
         openssh-client \
         su-exec \
@@ -26,6 +26,14 @@ RUN apk update && \
         py3-cryptography \
         py3-markupsafe \
         py3-yaml && \
+    # Docker Compose from Alpine's edge repository: stable Alpine releases
+    # keep the Compose version they shipped with, including its compiled-in
+    # Go libraries, which accumulate known vulnerabilities. Installed on its
+    # own, so nothing else comes from edge; its only dependency, docker-cli,
+    # is already installed from the stable release above.
+    apk add --no-cache \
+        --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community \
+        docker-cli-compose && \
     # Install pinned Python packages; every file is checked against its hash.
     # This also fails if one of Alpine's py3-* packages doesn't satisfy a
     # requirement: pip would then have to install it, which --require-hashes

@@ -1,0 +1,31 @@
+---
+  - name: Test Playbook Compose
+    hosts: localhost
+    connection: local
+    tasks:
+
+      - name: Get the Docker Compose version
+        ansible.builtin.command: docker compose version --short
+        register: compose_version
+        changed_when: false
+
+      - name: Print the Docker Compose version
+        ansible.builtin.debug:
+          var: compose_version.stdout
+
+      - name: Start a Compose project
+        community.docker.docker_compose_v2:
+          project_name: catpod-test-compose
+          definition:
+            services:
+              hello:
+                image: hello-world
+
+      - name: Remove the Compose project
+        community.docker.docker_compose_v2:
+          project_name: catpod-test-compose
+          definition:
+            services:
+              hello:
+                image: hello-world
+          state: absent

@@ -139,6 +139,9 @@ jobs:
           # Python, Ansible and the entrypoint start up.
           docker run --rm --platform "$PLATFORM" catpod-test --version
 
+          # Docker Compose (from Alpine edge) runs on this platform.
+          docker run --rm --platform "$PLATFORM" --entrypoint docker catpod-test compose version
+
           # cryptography (compiled code) works.
           OUTPUT=$(echo 'testpassword' | docker run --rm -i --platform "$PLATFORM" catpod-test \
             vault encrypt_string 'secretvalue' --name 'myvar' --vault-password-file /dev/stdin)

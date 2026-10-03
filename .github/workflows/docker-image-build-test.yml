@@ -413,3 +413,18 @@ jobs:
         if [ "$FAILED" -eq 1 ]; then
           exit 1
         fi
+
+    - name: Test Docker Compose works
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+
+        docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "${{ github.workspace }}/test-compose.yml:/tmp/test-compose.yml" \
+          "$IMAGE" /tmp/test-compose.yml
+
+        if [ -n "$(docker ps -aq --filter label=com.docker.compose.project=catpod-test-compose)" ]; then
+          echo "❌ Compose containers left behind"
+          exit 1
+        fi
+        echo "✅ Compose project started and removed via Ansible"

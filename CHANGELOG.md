@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Docker Compose now comes from Alpine's edge repository (currently 5.6.0) instead of Alpine 3.24 (5.1.4). Alpine's stable releases keep the Compose version they shipped with, including its compiled-in Go libraries (`golang.org/x/crypto`, `golang.org/x/net`, `grpc`, `containerd`), which Docker Scout reported 62 known vulnerabilities in (8 critical). Only Compose comes from edge; everything else stays on Alpine 3.24.
+
 ### Added
+
+- Added a test that runs a Docker Compose project through Ansible's `community.docker.docker_compose_v2` module, and a Compose check in the release smoke test for every platform.
 
 - The release workflow can now also publish when started manually: tick "publish" and enter the version (e.g. `2.0.0`). The image is built from the branch or tag selected for the run, independently of where the version's git tag points, so a version can be (re-)published after a failed release build without creating a new version. "latest" is optional and never applied to pre-release versions.
 
