@@ -16,6 +16,9 @@ on:
       - 'test*.yml'
       - '.github/workflows/docker-image-build-test.yml'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
