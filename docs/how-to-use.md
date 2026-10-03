@@ -95,6 +95,16 @@ Note that you don't need to mount the Docker socket or any playbooks for this, b
 
 In the above example, the local `local_collections` is mounted into the container at `/tmp/local_collections` and the mount is passed as download path (with the `-p` option) to `ansible-galaxy` in the container command.
 
+::: tip Harmless warning when listing collections
+Running `galaxy collection list` without a collection name prints this warning:
+
+```
+[WARNING]: Collection at '/usr/local/lib/python3.14/site-packages/ansible/_internal/ansible_collections/ansible/_protomatter' does not have a MANIFEST.json file, nor has it galaxy.yml: cannot detect version.
+```
+
+You can safely ignore it. `ansible._protomatter` is an internal part of Ansible itself and Ansible currently fails to hide it from the list (see [ansible/ansible#85689](https://github.com/ansible/ansible/issues/85689)).
+:::
+
 ### `vault`
 
 The `vault` command allows to encrypt variables and files that can be used in Ansible playbooks. You can find more details here: [https://docs.ansible.com/ansible/latest/cli/ansible-vault.html](https://docs.ansible.com/ansible/latest/cli/ansible-vault.html)
