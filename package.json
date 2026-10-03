@@ -1,13 +1,16 @@
 {
-  "comment": "to run dev server in utility container, use 'docker run -dit -p 80:8080 -v ./:/home/node -w /home/node --name catpod-docs --rm node:22-alpine npm run docs:dev'",
+  "comment": "to run dev server in utility container, use 'docker run -dit -p 80:8080 -v ./:/home/node -w /home/node --name catpod-docs --rm node:26-alpine npm run docs:dev'",
   "scripts": {
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs"
   },
   "devDependencies": {
-    "@vuepress/bundler-vite": "^2.0.0-rc.24",
-    "@vuepress/theme-default": "^2.0.0-rc.112",
-    "sass-embedded": "^1.93.2",
-    "vuepress": "^2.0.0-rc.24"
+    "@vuepress/bundler-vite": "^2.0.0-rc.31",
+    "@vuepress/theme-default": "^2.0.0-rc.137",
+    "sass-embedded": "^1.105.1",
+    "vuepress": "^2.0.0-rc.31"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true
   }
 }
