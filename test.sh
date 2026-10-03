@@ -63,9 +63,15 @@ docker rm "$CONTAINER_ID" > /dev/null
 
 # ─────────────────────────────────────────────────────────────────────
 
-run_test "Runs as non-root user"
+run_test "Playbooks run as non-root user"
 
-OUTPUT=$(docker run --rm --entrypoint /bin/ash "$IMAGE" -c "id")
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# Go through the real entrypoint, which starts as root and switches to catpod.
+OUTPUT=$(docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$SCRIPT_DIR/test-user.yml:/tmp/test-user.yml" \
+  "$IMAGE" /tmp/test-user.yml 2>&1)
 
 if echo "$OUTPUT" | grep -q "uid=10999(catpod)"; then
   pass "Running as catpod (UID 10999)"
@@ -93,12 +99,10 @@ run_test "Playbook mode"
 
 docker rm -f hello-world 2>/dev/null || true
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-
+# No --group-add: the entrypoint grants socket access automatically.
 docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v "$SCRIPT_DIR/test.yml:/tmp/test.yml" \
-  --group-add "$(stat -c '%g' /var/run/docker.sock)" \
   "$IMAGE" /tmp/test.yml
 
 if docker ps -a --format '{{.Names}}' | grep -q "^hello-world$"; then
@@ -150,9 +154,11 @@ fi
 
 # ─────────────────────────────────────────────────────────────────────
 
-run_test "Socket permission error without --group-add"
+run_test "Socket permission error with overridden user"
 
+# With --user, the entrypoint cannot grant socket access, so the check must fire.
 STDERR=$(docker run --rm \
+  --user 10999 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   "$IMAGE" --version 2>&1 || true)
 
@@ -190,6 +196,20 @@ if echo "$OUTPUT" | grep -q "kittens"; then
   fail "Default group name 'kittens' still present"
 else
   pass "Default group name 'kittens' replaced"
+fi
+
+# ─────────────────────────────────────────────────────────────────────
+
+run_test "CATPOD_INVENTORY_GROUP rejects invalid names"
+
+STDERR=$(docker run --rm \
+  -e 'CATPOD_INVENTORY_GROUP=bad/name' \
+  "$IMAGE" --version 2>&1 || true)
+
+if echo "$STDERR" | grep -q "may only contain letters, digits and underscores"; then
+  pass "Invalid group name rejected"
+else
+  fail "Expected invalid CATPOD_INVENTORY_GROUP to be rejected"
 fi
 
 # ── Summary ──────────────────────────────────────────────────────────

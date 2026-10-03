@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- The container no longer requires `--group-add $(stat -c '%g' /var/run/docker.sock)` to access the Docker socket. The entrypoint now starts as `root`, adds the `catpod` user to the socket's group, and switches to `catpod` via `su-exec` before running any Ansible command. This makes the same `docker run` command work on Linux and macOS (where `stat -c` is not supported). Passing `--group-add` still works but is no longer necessary.
+- The Docker socket permission error is now only shown when the container user is overridden with `--user`, and explains how to grant access in that case.
+- `CATPOD_INVENTORY_GROUP` is now validated: values containing anything other than letters, digits and underscores are rejected.
+
 ### Fixed
 
 - Removed `callbacks_enabled=profile_tasks,timer` from `ansible.cfg`, so the `profile_tasks` and `timer` callbacks are now off by default as intended in v1.8.0. They can still be enabled per-run via `-e ANSIBLE_CALLBACKS_ENABLED=profile_tasks,timer`.

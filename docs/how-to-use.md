@@ -29,7 +29,6 @@ With this example playbook, we can run a CATPOD container to start a [Docker *He
 docker run -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v ./test.yml:/tmp/test.yml \
-  --group-add $(stat -c '%g' /var/run/docker.sock) \
   --rm fpod/catpod \
     /tmp/test.yml
 ```
@@ -44,9 +43,11 @@ We need to mount two volumes into the CATPOD container:
 
 This is your example playbook that needs to be mounted into the container for the Ansible instance inside the container to use. Note that it does not matter where exactly in the container the file is mounted, as you specify the full file path in the container command anyway. However, `tmp` is a safe location without any risks of name collisions or overwriting existing files.
 
-**Enabling Docker socket access:** ` --group-add $(stat -c '%g' /var/run/docker.sock)`
+**Docker socket access**
 
-The default user inside the CATPOD container is not `root` but a user named `catpod` with the UID and GID `10900`. This user does not automatically have permissions to access the mounted Docker socket. The the `group-add` option, you add the `catpod` user to the group with the required permissions to do so.
+Playbooks inside the CATPOD container are not run by `root` but by a user named `catpod` with the UID and GID `10999`. To give this user access to the mounted Docker socket, the container starts as `root` just long enough to add `catpod` to the group that owns the socket, then switches to `catpod` before doing anything else. You don't need to do anything for this, and the same command works on Linux and macOS.
+
+If you override the container user with `--user`, CATPOD can't grant socket access itself. In that case, add the socket's group yourself, e.g. with `--group-add $(stat -c '%g' /var/run/docker.sock)` on Linux.
 
 It is recommended to use the `--rm` option to remove the CATPOD container after it has run the playbook, otherwise you'll end up with an idle container hanging around.
 
@@ -70,7 +71,6 @@ This is used just like in the example above:
 docker run -it \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v ./test.yml:/tmp/test.yml \
-  --group-add $(stat -c '%g' /var/run/docker.sock) \
   --rm fpod/catpod \
     /tmp/test.yml
 ```
@@ -86,7 +86,6 @@ You can run this container command like `ansible-galaxy` itself, e.g., for downl
 ```sh
 docker run -it \
   -v ./local_collections:/tmp/local_collections \
-   --group-add $(stat -c '%g' /var/run/docker.sock) \
    --rm fpod/catpod \
     galaxy collection download my_namespace.my_collection \
     -p /tmp/local_collections
@@ -104,7 +103,6 @@ You can run this container command like `ansible-vault` itself, e.g, for encrypt
 
 ```sh
 docker run -it \
-  --group-add $(stat -c '%g' /var/run/docker.sock) \
   --rm fpod/catpod vault \
     encrypt_string 'secret-access-token' --name 'encrypted_token'
 ```

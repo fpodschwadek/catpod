@@ -1,0 +1,14 @@
+---
+  - name: Test Playbook User
+    hosts: localhost
+    connection: local
+    tasks:
+
+      - name: Get the user running the playbook
+        ansible.builtin.command: id
+        register: user_id
+        changed_when: false
+
+      - name: Print the user running the playbook
+        ansible.builtin.debug:
+          var: user_id.stdout

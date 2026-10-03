@@ -67,12 +67,17 @@ jobs:
           exit 1
         fi
 
-    - name: Test runs as non-root user
+    - name: Test playbooks run as non-root user
       if: steps.filter.outputs.imagestuff == 'true'
       run: |
         IMAGE="catpod-test:${{ github.run_number }}"
-        OUTPUT=$(docker run --rm --entrypoint /bin/ash "$IMAGE" -c "id")
-        echo "Container user: $OUTPUT"
+
+        # Go through the real entrypoint, which starts as root and switches to catpod.
+        OUTPUT=$(docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v "${{ github.workspace }}/test-user.yml:/tmp/test-user.yml" \
+          "$IMAGE" /tmp/test-user.yml 2>&1)
+        echo "$OUTPUT"
 
         if ! echo "$OUTPUT" | grep -q "uid=10999(catpod)"; then
           echo "❌ Expected uid=10999(catpod)"
@@ -109,10 +114,10 @@ jobs:
         # Remove any leftover hello-world container from previous runs
         docker rm -f hello-world 2>/dev/null || true
 
+        # No --group-add: the entrypoint grants socket access automatically.
         docker run --rm \
           -v /var/run/docker.sock:/var/run/docker.sock \
           -v "${{ github.workspace }}/test.yml:/tmp/test.yml" \
-          --group-add $(stat -c '%g' /var/run/docker.sock) \
           "$IMAGE" /tmp/test.yml
 
         if docker ps -a --format '{{.Names}}' | grep -q "^hello-world$"; then
@@ -178,13 +183,14 @@ jobs:
           exit 1
         fi
 
-    - name: Test socket permission error without --group-add
+    - name: Test socket permission error with overridden user
       if: steps.filter.outputs.imagestuff == 'true'
       run: |
         IMAGE="catpod-test:${{ github.run_number }}"
 
-        # Mount the socket but don't grant group access
+        # With --user, the entrypoint cannot grant socket access, so the check must fire.
         STDERR=$(docker run --rm \
+          --user 10999 \
           -v /var/run/docker.sock:/var/run/docker.sock \
           "$IMAGE" --version 2>&1 || true)
         echo "$STDERR"
@@ -227,4 +233,21 @@ jobs:
           exit 1
         else
           echo "✅ Default group name 'kittens' replaced"
+        fi
+
+    - name: Test CATPOD_INVENTORY_GROUP rejects invalid names
+      if: steps.filter.outputs.imagestuff == 'true'
+      run: |
+        IMAGE="catpod-test:${{ github.run_number }}"
+
+        STDERR=$(docker run --rm \
+          -e 'CATPOD_INVENTORY_GROUP=bad/name' \
+          "$IMAGE" --version 2>&1 || true)
+        echo "$STDERR"
+
+        if echo "$STDERR" | grep -q "may only contain letters, digits and underscores"; then
+          echo "✅ Invalid group name rejected"
+        else
+          echo "❌ Expected invalid CATPOD_INVENTORY_GROUP to be rejected"
+          exit 1
         fi

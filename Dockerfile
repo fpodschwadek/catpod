@@ -12,7 +12,8 @@ RUN apk update && \
     apk add --no-cache --update \
         docker-cli-compose \
         git \
-        openssh-client && \
+        openssh-client \
+        su-exec && \
     # Continue with other installations
     pip3 install --no-cache-dir ansible docker requests && \
     # Make sure that we have the latest version of relevant
@@ -41,7 +42,7 @@ RUN apk update && \
     chown -R catpod:catpod /etc/ansible
 
 WORKDIR /srv
-# Switch to non-root user
-USER catpod
+# No USER instruction: the entrypoint starts as root only to grant the
+# 'catpod' user access to the Docker socket, then switches to 'catpod'.
 
 ENTRYPOINT ["/srv/entrypoint.sh"]
