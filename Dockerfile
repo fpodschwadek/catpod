@@ -17,6 +17,9 @@ RUN apk update && \
         docker-cli \
         git \
         openssh-client \
+        # Relays a Docker socket that only root can use to the catpod user
+        # (see entrypoint.sh)
+        socat \
         su-exec \
         tini \
         python3 \
@@ -71,7 +74,8 @@ RUN apk update && \
 
 WORKDIR /srv
 # No USER instruction: the entrypoint starts as root only to grant the
-# 'catpod' user access to the Docker socket, then switches to 'catpod'.
+# 'catpod' user access to the Docker socket (through the socket's group, or a
+# socket relay that keeps running as root), then switches to 'catpod'.
 
 # tini runs as PID 1 and forwards signals (e.g. SIGTERM from `docker stop`) to
 # the whole process group, so Ansible and its workers can shut down cleanly.
