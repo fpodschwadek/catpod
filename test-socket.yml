@@ -1,0 +1,45 @@
+---
+  - name: Test Playbook Docker Socket
+    hosts: localhost
+    connection: local
+    tasks:
+
+      - name: Get the user running the playbook
+        ansible.builtin.command: id
+        register: user_id
+        changed_when: false
+        tags: env
+
+      - name: Print the user running the playbook
+        ansible.builtin.debug:
+          var: user_id.stdout
+        tags: env
+
+      # Set by the entrypoint when it relays the Docker socket.
+      - name: Print DOCKER_HOST
+        ansible.builtin.debug:
+          msg: "DOCKER_HOST=[{{ lookup('ansible.builtin.env', 'DOCKER_HOST') }}]"
+        tags: env
+
+      - name: Connect through the community.docker modules
+        community.docker.docker_host_info:
+        register: host_info
+
+      - name: Print the Docker server version
+        ansible.builtin.debug:
+          var: host_info.host_info.ServerVersion
+
+      # Output that follows the end of stdin must not get lost on the way
+      # (see the socat options in entrypoint.sh). test_image is passed with
+      # -e, so no other image has to be pulled.
+      - name: Run a container that keeps writing after its stdin has ended
+        ansible.builtin.shell: >-
+          echo hello |
+          docker run --rm -i --entrypoint /bin/ash {{ test_image }}
+          -c 'cat; sleep 2; echo after-eof'
+        register: stdin_run
+        changed_when: false
+
+      - name: Print the container output
+        ansible.builtin.debug:
+          var: stdin_run.stdout_lines

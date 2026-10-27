@@ -370,6 +370,150 @@ else
   fail "Compose containers left behind"
 fi
 
+# ─────────────────────────────────────────────────────────────────────
+
+run_test "Root-only Docker socket is relayed"
+
+# A socket 'catpod' can use through its group needs no relay.
+OUTPUT=$(docker run --rm \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$SCRIPT_DIR/test-socket.yml:/tmp/test-socket.yml" \
+  "$IMAGE" /tmp/test-socket.yml --tags env 2>&1)
+
+if echo "$OUTPUT" | grep -qF "DOCKER_HOST=[]"; then
+  pass "No relay for a group-accessible socket"
+else
+  fail "Unexpected DOCKER_HOST for a group-accessible socket: $OUTPUT"
+fi
+
+# Simulate Docker Desktop on macOS, where the socket in containers belongs
+# to root:root with mode 0755: a helper container running as root offers the
+# real socket with these permissions in a temporary directory. The socket is
+# then mounted just like the real one. The helper uses socat's -t 86400 for
+# the same reason as the entrypoint, so it doesn't cut off output itself.
+ROOT_SOCK_DIR=$(mktemp -d)
+ROOT_SOCK="$ROOT_SOCK_DIR/docker.sock"
+docker rm -f catpod-test-rootsock 2>/dev/null || true
+
+docker run -d \
+  --name catpod-test-rootsock \
+  --entrypoint socat \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$ROOT_SOCK_DIR:/sock" \
+  "$IMAGE" -t 86400 UNIX-LISTEN:/sock/docker.sock,fork,mode=755 UNIX-CONNECT:/var/run/docker.sock > /dev/null
+
+for _ in $(seq 30); do
+  [ -S "$ROOT_SOCK" ] && break
+  sleep 1
+done
+
+EXIT=0
+OUTPUT=$(docker run --rm \
+  -v "$ROOT_SOCK:/var/run/docker.sock" \
+  -v "$SCRIPT_DIR/test-socket.yml:/tmp/test-socket.yml" \
+  "$IMAGE" /tmp/test-socket.yml -e "test_image=$IMAGE" 2>&1) || EXIT=$?
+
+if [ "$EXIT" -eq 0 ]; then
+  pass "Playbook uses a root-only socket"
+else
+  fail "Playbook failed with a root-only socket: $OUTPUT"
+fi
+
+if echo "$OUTPUT" | grep -q "uid=10999(catpod)" && ! echo "$OUTPUT" | grep -q "(root)"; then
+  pass "Runs as catpod, without the root group"
+else
+  fail "Expected catpod without the root group: $(echo "$OUTPUT" | grep 'uid=')"
+fi
+
+if echo "$OUTPUT" | grep -qF "DOCKER_HOST=[unix:///run/catpod/docker.sock]"; then
+  pass "DOCKER_HOST points to the relay"
+else
+  fail "DOCKER_HOST does not point to the relay"
+fi
+
+if echo "$OUTPUT" | grep -q "after-eof"; then
+  pass "Output after the end of stdin is passed on"
+else
+  fail "Output after the end of stdin was cut off"
+fi
+
+EXIT=0
+OUTPUT=$(docker run --rm \
+  -v "$ROOT_SOCK:/var/run/docker.sock" \
+  -v "$SCRIPT_DIR/test-compose.yml:/tmp/test-compose.yml" \
+  "$IMAGE" /tmp/test-compose.yml 2>&1) || EXIT=$?
+
+if [ "$EXIT" -eq 0 ]; then
+  pass "Docker Compose works through the relay"
+else
+  fail "Compose playbook failed through the relay: $OUTPUT"
+fi
+
+# shellcheck disable=SC2086 # word splitting of $HARDENING is intended
+OUTPUT=$(docker run --rm $HARDENING \
+  -v "$ROOT_SOCK:/var/run/docker.sock" \
+  -v "$SCRIPT_DIR/test-socket.yml:/tmp/test-socket.yml" \
+  "$IMAGE" /tmp/test-socket.yml -e "test_image=$IMAGE" 2>&1) || true
+
+if echo "$OUTPUT" | grep -q "uid=10999(catpod)" && echo "$OUTPUT" | grep -q "after-eof"; then
+  pass "Relay works with the documented hardening options"
+else
+  fail "Relay failed with hardening options: $OUTPUT"
+fi
+
+docker rm -f catpod-test-relay-stop 2>/dev/null || true
+
+# shellcheck disable=SC2086
+docker run -d $HARDENING \
+  --name catpod-test-relay-stop \
+  -v "$ROOT_SOCK:/var/run/docker.sock" \
+  -v "$SCRIPT_DIR/test-sleep.yml:/tmp/test-sleep.yml" \
+  "$IMAGE" /tmp/test-sleep.yml > /dev/null
+
+for _ in $(seq 30); do
+  docker logs catpod-test-relay-stop 2>&1 | grep -q "TASK \[Sleep" && break
+  sleep 1
+done
+
+docker stop catpod-test-relay-stop > /dev/null
+EXIT=$(docker inspect catpod-test-relay-stop --format '{{.State.ExitCode}}')
+docker rm catpod-test-relay-stop > /dev/null
+
+if [ "$EXIT" -eq 143 ]; then
+  pass "docker stop forwards SIGTERM with the relay running (exit 143)"
+else
+  fail "docker stop exited with $EXIT with the relay running"
+fi
+
+# Without root, there's no relay, and the error explains why.
+STDERR=$(docker run --rm \
+  --user 10999 \
+  -v "$ROOT_SOCK:/var/run/docker.sock" \
+  "$IMAGE" --version 2>&1 || true)
+
+if echo "$STDERR" | grep -q "only works without --user"; then
+  pass "Root-only socket error with overridden user"
+else
+  fail "Expected root-only socket hint with --user: $STDERR"
+fi
+
+# A DOCKER_HOST set by the user is respected: no relay, no socket checks.
+OUTPUT=$(docker run --rm \
+  -e DOCKER_HOST=tcp://127.0.0.1:1 \
+  -v "$ROOT_SOCK:/var/run/docker.sock" \
+  -v "$SCRIPT_DIR/test-socket.yml:/tmp/test-socket.yml" \
+  "$IMAGE" /tmp/test-socket.yml --tags env 2>&1)
+
+if echo "$OUTPUT" | grep -qF "DOCKER_HOST=[tcp://127.0.0.1:1]" \
+  && ! echo "$OUTPUT" | grep -q -e "Cannot access Docker socket" -e "Docker socket not found"; then
+  pass "User-defined DOCKER_HOST is left alone"
+else
+  fail "User-defined DOCKER_HOST was not respected: $OUTPUT"
+fi
+
+docker rm -f catpod-test-rootsock > /dev/null
+rm -rf "$ROOT_SOCK_DIR"
+
 # ── Summary ──────────────────────────────────────────────────────────
 
 echo ""
