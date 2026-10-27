@@ -53,9 +53,7 @@ Playbooks inside the CATPOD container are not run by `root` but by a user named 
 You don't need to do anything for either, and the same command works on Linux and macOS.
 
 ::: details How the socket relay works
-When `catpod` can't use the socket through its group, the entrypoint starts [socat](http://www.dest-unreach.org/socat/) as `root`. socat listens on `/run/catpod/docker.sock`, a socket that belongs to `catpod` (mode `0600`), and passes every connection on to `/var/run/docker.sock` byte by byte, without interpreting it. The entrypoint sets `DOCKER_HOST=unix:///run/catpod/docker.sock`, which the Docker CLI, Docker Compose and the `community.docker` modules and inventory use automatically. Ansible still runs as `catpod`; socat is the only process that keeps running as `root`, and it ends with the container.
-
-This gives `catpod` no more than group membership would: access to the Docker socket is equivalent to root access on the host either way. Unlike adding `catpod` to the `root` group or changing the socket's permissions, the relay changes nothing outside the CATPOD container.
+When `catpod` can't use the socket through its group, the entrypoint starts [socat](http://www.dest-unreach.org/socat/) as `root`. socat listens on `/run/catpod/docker.sock`, a socket that belongs to `catpod` (mode `0600`), and passes every connection on to `/var/run/docker.sock` byte by byte, without interpreting it. The entrypoint sets `DOCKER_HOST=unix:///run/catpod/docker.sock`, which the Docker CLI, Docker Compose and the `community.docker` modules and inventory use automatically. Ansible still runs as `catpod`; socat is the only process that keeps running as `root` for the lifetime of the container.
 
 Some things to keep in mind:
 
@@ -64,7 +62,7 @@ Some things to keep in mind:
 - The relay is only started for playbooks, not for the `galaxy` and `vault` commands, which don't use Docker.
 :::
 
-If you override the container user with `--user`, CATPOD can't grant socket access itself. In that case, add the socket's group yourself, e.g. with `--group-add $(stat -c '%g' /var/run/docker.sock)` on Linux. A socket that only `root` can use (e.g. with Docker Desktop on macOS) only works without `--user`.
+If you override the container user with `--user`, CATPOD can't grant socket access itself. In that case, add the socket's group yourself, e.g., with `--group-add $(stat -c '%g' /var/run/docker.sock)` on Linux. A socket that only `root` can use (e.g. with Docker Desktop on macOS) only works *without* `--user`.
 
 It is recommended to use the `--rm` option to remove the CATPOD container after it has run the playbook, otherwise you'll end up with an idle container hanging around.
 
