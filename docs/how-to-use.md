@@ -45,9 +45,26 @@ This is your example playbook that needs to be mounted into the container for th
 
 **Docker socket access**
 
-Playbooks inside the CATPOD container are not run by `root` but by a user named `catpod` with the UID and GID `10999`. To give this user access to the mounted Docker socket, the container starts as `root` just long enough to add `catpod` to the group that owns the socket, then switches to `catpod` before doing anything else. You don't need to do anything for this, and the same command works on Linux and macOS.
+Playbooks inside the CATPOD container are not run by `root` but by a user named `catpod` with the UID and GID `10999`. To give this user access to the mounted Docker socket, the container starts as `root`, grants access in one of two ways, and then switches to `catpod` before running anything else:
 
-If you override the container user with `--user`, CATPOD can't grant socket access itself. In that case, add the socket's group yourself, e.g. with `--group-add $(stat -c '%g' /var/run/docker.sock)` on Linux.
+- **Through the socket's group:** usually the socket belongs to a group such as `docker` that can read and write it (the default on Linux). CATPOD adds `catpod` to that group.
+- **Through a socket relay:** some setups mount a socket that only `root` can use, e.g. Docker Desktop on macOS, where the socket in containers belongs to `root:root` with mode `0755`. Group membership doesn't help there, so CATPOD relays the socket to `catpod` instead (see below).
+
+You don't need to do anything for either, and the same command works on Linux and macOS.
+
+::: details How the socket relay works
+When `catpod` can't use the socket through its group, the entrypoint starts [socat](http://www.dest-unreach.org/socat/) as `root`. socat listens on `/run/catpod/docker.sock`, a socket that belongs to `catpod` (mode `0600`), and passes every connection on to `/var/run/docker.sock` byte by byte, without interpreting it. The entrypoint sets `DOCKER_HOST=unix:///run/catpod/docker.sock`, which the Docker CLI, Docker Compose and the `community.docker` modules and inventory use automatically. Ansible still runs as `catpod`; socat is the only process that keeps running as `root`, and it ends with the container.
+
+This gives `catpod` no more than group membership would: access to the Docker socket is equivalent to root access on the host either way. Unlike adding `catpod` to the `root` group or changing the socket's permissions, the relay changes nothing outside the CATPOD container.
+
+Some things to keep in mind:
+
+- Don't set `docker_host: unix:///var/run/docker.sock` explicitly in your playbooks; leave it out, so the modules use `DOCKER_HOST`. Docker errors may mention `/run/catpod/docker.sock`: that's the relay.
+- If you set `DOCKER_HOST` yourself (e.g. `-e DOCKER_HOST=ssh://user@server` for a remote Docker host), CATPOD uses it as it is and starts no relay.
+- The relay is only started for playbooks, not for the `galaxy` and `vault` commands, which don't use Docker.
+:::
+
+If you override the container user with `--user`, CATPOD can't grant socket access itself. In that case, add the socket's group yourself, e.g. with `--group-add $(stat -c '%g' /var/run/docker.sock)` on Linux. A socket that only `root` can use (e.g. with Docker Desktop on macOS) only works without `--user`.
 
 It is recommended to use the `--rm` option to remove the CATPOD container after it has run the playbook, otherwise you'll end up with an idle container hanging around.
 
@@ -81,7 +98,7 @@ docker run -it \
 `--cap-drop ALL` removes all of root's special privileges (Linux capabilities) inside the container, and the `--cap-add` options give back only the four that CATPOD's startup needs:
 
 - `SETUID` and `SETGID` to switch from `root` to the `catpod` user,
-- `CHOWN` to hand the terminal and input/output streams over to `catpod`,
+- `CHOWN` to hand the terminal and input/output streams over to `catpod` (and, if needed, the [socket relay](#getting-started)),
 - `KILL` to pass signals such as `docker stop` or Ctrl+C on to Ansible (without it, the container is still stopped, but Ansible is killed instead of being terminated).
 
 `--security-opt no-new-privileges` prevents any process in the container from gaining privileges later on, e.g. through setuid programs.

@@ -30,6 +30,8 @@ These days, lots of stuff is done with Docker (or Podman, or whatever your favou
 
 To do this, we need to mount the Docker socket of the host system into the CATPOD container. We can then use it to create and provision containers for other applications on the host system (see [Jérôme Petazzoni's Post](https://jpetazzo.github.io/2015/09/03/do-not-use-docker-in-docker-for-ci/#the-socket-solution) for this wonderfully simple strategy).
 
+Playbooks run as the non-root user `catpod`. CATPOD gives this user access to the socket automatically, both on Linux and with Docker Desktop on macOS (where the socket can only be used by `root`, so CATPOD relays it to `catpod`). See the [docs](https://fpodschwadek.github.io/catpod/how-to-use.html#getting-started) for details.
+
 ## Supported Platforms
 
 The `fpod/catpod` image is published for several platforms under the same tag; Docker automatically pulls the image for your machine.
@@ -97,7 +99,7 @@ To run the test suite locally:
 ./test.sh
 ```
 
-This builds the Docker image and runs all tests (binary checks, entrypoint command modes, socket diagnostics, Ansible configuration, user permissions, and inventory group substitution). To skip the build and test against an existing image:
+This builds the Docker image and runs all tests (binary checks, entrypoint command modes, socket diagnostics, the socket relay for root-only sockets, Ansible configuration, user permissions, and inventory group substitution). To skip the build and test against an existing image:
 
 ```bash
 ./test.sh --no-build

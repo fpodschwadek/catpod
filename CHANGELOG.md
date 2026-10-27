@@ -5,22 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.2.0] - 2026-10-27
 
 ### Security
 
-- Docker Compose now comes from Alpine's edge repository (currently 5.6.0) instead of Alpine 3.24 (5.1.4). Alpine's stable releases keep the Compose version they shipped with, including its compiled-in Go libraries (`golang.org/x/crypto`, `golang.org/x/net`, `grpc`, `containerd`), which Docker Scout reported 62 known vulnerabilities in (8 critical). Only Compose comes from edge; everything else stays on Alpine 3.24.
+- Docker Compose now comes from Alpine's edge repository (currently 5.6.0) instead of Alpine 3.24 (5.1.4). Alpine's stable releases keep the Compose version they shipped with, including its compiled-in Go libraries (`golang.org/x/crypto`, `golang.org/x/net`, `grpc`, `containerd`), which Docker Scout reported 62 known vulnerabilities in (8 critical).
 
 ### Added
 
+- `socat` is now part of the image, for the Docker socket relay (see Fixed).
+- Added tests for the Docker socket relay, using a simulated root-only socket: it works with Docker Compose, the documented hardening options and `docker stop`, and doesn't cut off output after the end of stdin (e.g. `docker run -i`).
 - Added a test that runs a Docker Compose project through Ansible's `community.docker.docker_compose_v2` module, and a Compose check in the release smoke test for every platform.
 
-- The release workflow can now also publish when started manually: tick "publish" and enter the version (e.g. `2.0.0`). The image is built from the branch or tag selected for the run, independently of where the version's git tag points, so a version can be (re-)published after a failed release build without creating a new version. "latest" is optional and never applied to pre-release versions.
+### Changed
+
+- When `DOCKER_HOST` points to a remote Docker daemon (e.g. `tcp://` or `ssh://`), the entrypoint no longer checks for a local Docker socket, so it no longer warns that the socket is missing. If `DOCKER_HOST` points to a local socket (`unix://`), that socket is checked instead of `/var/run/docker.sock`.
 
 ### Fixed
 
-- Fixed the image build for `linux/arm/v6` and `linux/arm/v7`: removed the `pip3 check` build step, which rejected Alpine's 32-bit ARM Python packages because their metadata names the platform of the 64-bit machine they were built on (`armv8l`). The installation itself already fails if an Alpine package doesn't satisfy a requirement, so no check is lost.
-- The release workflow no longer cancels the remaining platform builds when one fails, so all failures show up at once. Images are still only published if every platform succeeds.
+- CATPOD now works with Docker sockets that only `root` can use, e.g. with Docker Desktop on macOS (where the socket in containers belongs to `root:root` with mode `0755`), without any setup. Previously, playbooks failed with "Cannot access Docker socket". The entrypoint now relays such a socket to the `catpod` user: `socat`, running as `root`, passes connections from a socket owned by `catpod` (`/run/catpod/docker.sock`) on to the real one, and `DOCKER_HOST` points to it. No relay is started if `catpod` can use the socket through its group (as on Linux), if `DOCKER_HOST` is already set, or for `galaxy` and `vault`.
 
 ## [2.0.0] - 2026-10-03
 
