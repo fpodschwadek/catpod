@@ -2,7 +2,7 @@
 # Plain Alpine instead of the official Python image: Alpine provides Python
 # and the compiled Python packages prebuilt for every platform we publish,
 # so no platform has to compile them (see requirements.in).
-FROM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+FROM alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
 
 COPY ansible.cfg catpod.yml docker.yml /etc/ansible/
 COPY entrypoint.sh /srv/
